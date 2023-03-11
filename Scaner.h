@@ -16,9 +16,12 @@ public:
     int getNewLinePos();
     void setNewLinePos(int);
     void printError(char*, char*, int, int);
+
+    void printError(char*, char*);
     int scan(TypeLex lex);
     void getData(char*);
     Scaner(char*);
+
     ~Scaner() {}
 };
 

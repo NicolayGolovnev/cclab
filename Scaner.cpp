@@ -35,6 +35,24 @@ void Scaner::printError(char* error, char* lex, int _line, int _pos) {
     }
     exit(-220);
 }
+// scaner->printError(const_cast<char *>("Expected one of the variable types - int, short, long, double -, or identifier"), lex);
+void Scaner::printError(char* error, char* lex) {
+    if ((line == -1) && (pos == -1)) {
+        if (lex[0] == '\0')
+            printf("Error: %s\n", error);
+        else
+            printf("Error: %s. Wrong symbol %s\n", error, lex);
+    }
+    else {
+        if (lex[0] == '\0')
+            printf("Error: %s, symbol %s in line %d, position %d\n",
+                    error, lex, this->getLine() + 1, this->getPos() - this->getNewLinePos() + 1);
+        else
+            printf("Error: %s. Wrong symbol %s in line %d, position %d\n",
+                    error, lex, this->getLine() + 1, this->getPos() - this->getNewLinePos() + 1);
+    }
+    exit(-220);
+}
 
 int Scaner::scan(TypeLex lex) {
     // Текущая длина лексемы
