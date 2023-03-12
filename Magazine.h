@@ -84,7 +84,9 @@ private:
     void endofMultiplierRule2();
     void endofMultiplierRule3();
     void basicExprRule1();
-    void basicExprRule2();
+    void basicExprRule2Int();
+    void basicExprRule2Hex();
+    void basicExprRule2Exp();
     void basicExprRule3();
 
     void preIdentRule();
