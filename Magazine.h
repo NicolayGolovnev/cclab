@@ -39,6 +39,7 @@ private:
     void descriptionRule3();
 
     void structRule();
+    void structVarsRule();
     void typeRuleInt();
     void typeRuleShort();
     void typeRuleLong();
@@ -49,6 +50,7 @@ private:
     void mainRule();
     void endofVarListRule();
     void mayEqualRule();
+    void varsRule();
 
     void compoundOperatorRule();
     void compoundBodyRule1();

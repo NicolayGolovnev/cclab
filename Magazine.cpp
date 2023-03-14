@@ -206,6 +206,18 @@ void Magazine::structRule() {
     this->ptrUp();
 }
 
+void Magazine::structVarsRule() {
+    this->ptrDown();
+
+    this->magazine[this->curMagPtr].typeSymb = TypeStructVarsNonTerm;
+    this->magazine[this->curMagPtr].term = false;
+    this->ptrUp();
+
+    this->magazine[this->curMagPtr].typeSymb = TypeVarsNonTerm;
+    this->magazine[this->curMagPtr].term = false;
+    this->ptrUp();
+}
+
 void Magazine::typeRuleInt() {
     this->ptrDown();
 
@@ -323,6 +335,30 @@ void Magazine::mayEqualRule() {
 
     this->magazine[this->curMagPtr].typeSymb = TypeAssign;
     this->magazine[this->curMagPtr].term = true;
+    this->ptrUp();
+}
+
+void Magazine::varsRule() {
+    this->ptrDown();
+
+    this->magazine[this->curMagPtr].typeSymb = TypeEndComma;
+    this->magazine[this->curMagPtr].term = true;
+    this->ptrUp();
+
+    this->magazine[this->curMagPtr].typeSymb = TypeEndofVarList;
+    this->magazine[this->curMagPtr].term = false;
+    this->ptrUp();
+
+    this->magazine[this->curMagPtr].typeSymb = TypeMayEqualNonTerm;
+    this->magazine[this->curMagPtr].term = false;
+    this->ptrUp();
+
+    this->magazine[this->curMagPtr].typeSymb = TypeIdent;
+    this->magazine[this->curMagPtr].term = true;
+    this->ptrUp();
+
+    this->magazine[this->curMagPtr].typeSymb = TypeTypeNonTerm;
+    this->magazine[this->curMagPtr].term = false;
     this->ptrUp();
 }
 
