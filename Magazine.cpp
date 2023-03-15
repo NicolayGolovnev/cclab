@@ -64,38 +64,155 @@ void Magazine::analyzeNonTerm(int lexType) {
                     );
             break;
         case TypeDescriptionNonTerm:
+            if (lexType == TypeStruct)
+                descriptionRule1();
+            else if (isType(lexType))
+                descriptionRule2();
+            else if (lexType == TypeConst)
+                descriptionRule3();
+            else this->scanner->printError(
+                        const_cast<char *>("Expected description of structure, const-vars, vars or main-function"),
+                        this->magazine[this->curMagPtr].lex
+                        );
             break;
         case TypeStructNonTerm:
+            structRule();
+            break;
+        case TypeStructVarsNonTerm:
+            if (isType(lexType))
+                structVarsRule();
+            else if (lexType == TypeRightFB)
+                epsilon();
+            else this->scanner->printError(
+                    const_cast<char *>("Expected vars description of structure"),
+                    this->magazine[this->curMagPtr].lex
+                    );
             break;
         case TypeTypeNonTerm:
+            if (isType(lexType)) {
+                if (lexType == TypeInt)
+                    typeRuleInt();
+                else if (lexType == TypeShort)
+                    typeRuleShort();
+                else if (lexType == TypeLong)
+                    typeRuleLong();
+                else if (lexType == TypeDouble)
+                    typeRuleDouble();
+                else if (lexType == TypeIdent)
+                    typeRuleIdent();
+                else this->scanner->printError(
+                        const_cast<char *>("Expected correct type of var or structure"),
+                        this->magazine[this->curMagPtr].lex
+                        );
+            } else this->scanner->printError(
+                    const_cast<char *>("Expected type \'int\', \'short\', \'long\', \'double\' or identifier of a structure"),
+                    this->magazine[this->curMagPtr].lex
+                    );
             break;
         case TypeMainOrVarsNonTerm:
+            if (lexType == TypeMain)
+                mainOrVarsRule1();
+            else if (lexType == TypeIdent)
+                mainOrVarsRule2();
+            else this->scanner->printError(
+                    const_cast<char *>("Expected description of main-function or var-list"),
+                    this->magazine[this->curMagPtr].lex
+                    );
             break;
         case TypeMainNonTerm:
+            mainRule();
             break;
         case TypeEndofVarList:
+            if (lexType == TypeComma)
+                endofVarListRule();
+            else if (lexType == TypeEndComma)
+                epsilon();
+            else this->scanner->printError(
+                    const_cast<char *>("Expected symbol \';\' or continue of var-list"),
+                    this->magazine[this->curMagPtr].lex
+                    );
             break;
         case TypeMayEqualNonTerm:
+            if (lexType == TypeAssign)
+                mayEqualRule();
+            else if (lexType == TypeComma || lexType == TypeEndComma)
+                epsilon();
+            else this->scanner->printError(
+                    const_cast<char *>("Expected operation of assign"),
+                    this->magazine[this->curMagPtr].lex
+                    );
+            break;
+        case TypeVarsNonTerm:
+            varsRule();
             break;
         case TypeCompoundOperatorNonTerm:
+            compoundOperatorRule();
             break;
         case TypeCompoundBodyNonTerm:
+            if (isType(lexType))
+                compoundBodyRule1();
+            else if (lexType == TypeEndComma || lexType == TypeFor || lexType == TypeIdent || lexType == TypeLeftFB)
+                compoundBodyRule2();
+            else if (lexType == TypeRightFB)
+                epsilon();
+            else this->scanner->printError(
+                    const_cast<char *>("Expected vars or operators in compound body"),
+                    this->magazine[this->curMagPtr].lex
+                    );
             break;
         case TypeOperatorNonTerm:
+            if (lexType == TypeFor || lexType == TypeIdent)
+                operatorRule1();
+            else if (lexType == TypeLeftFB)
+                operatorRule2();
+            else if (lexType == TypeEndComma)
+                operatorRule3();
+            else this->scanner->printError(
+                    const_cast<char *>("Expected simple or compound operators"),
+                    this->magazine[this->curMagPtr].lex
+                    );
             break;
         case TypeSimpleOperatorNonTerm:
+            if (lexType == TypeFor)
+                simpleOperatorRule1();
+            else if (lexType == TypeIdent)
+                simpleOperatorRule2();
+            else this->scanner->printError(
+                    const_cast<char *>("Expected for or equal operators"),
+                    this->magazine[this->curMagPtr].lex
+                    );
             break;
         case TypeForNonTerm:
+            forRule();
             break;
         case TypeEqualNonTerm:
+            equalRule();
             break;
         case TypeExprNonTerm:
+            exprRule();
             break;
         case TypeEndofExprNonTerm:
+            if (lexType == TypeBitOr)
+                endofExprRule();
+            else if (lexType == TypeEndComma || lexType == TypeComma || lexType == TypeRightRB)
+                epsilon();
+            else this->scanner->printError(
+                    const_cast<char *>("Expected or-bit operator"),
+                    this->magazine[this->curMagPtr].lex
+                    );
             break;
         case TypeXorBitNonTerm:
+            xorBitRule();
             break;
         case TypeEndofXorNonTerm:
+            if (lexType == TypeBitXor)
+                endofXorRule();
+            else if (lexType == 1)
+                epsilon();
+            else this->scanner->printError(
+                    const_cast<char *>("Expected xor-bit operator"),
+                    this->magazine[this->curMagPtr].lex
+                    );
             break;
         case TypeAndBitNonTerm:
             break;
