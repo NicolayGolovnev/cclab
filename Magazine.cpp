@@ -7,6 +7,7 @@
 
 #define isConst(type) ((type == TypeConstInt) || (type == TypeConstHex) || (type == TypeConstExp))
 #define isType(type) ((type == TypeInt) || (type == TypeShort) || (type == TypeLong) || (type == TypeDouble) || (type == TypeIdent))
+#define isComparisonSign(type) ((type == TypeEqual) || (type == TypeNotEqual) || (type == TypeLess) || (type == TypeLessOrEqual) || (type == TypeMore) || (type == TypeMoreOrEqual))
 
 Magazine::Magazine(char *filename) {
     this->scanner = new Scaner(filename);
@@ -207,7 +208,7 @@ void Magazine::analyzeNonTerm(int lexType) {
         case TypeEndofXorNonTerm:
             if (lexType == TypeBitXor)
                 endofXorRule();
-            else if (lexType == 1)
+            else if (lexType == TypeEndComma || lexType == TypeComma || lexType == TypeRightRB)
                 epsilon();
             else this->scanner->printError(
                     const_cast<char *>("Expected xor-bit operator"),
@@ -215,28 +216,110 @@ void Magazine::analyzeNonTerm(int lexType) {
                     );
             break;
         case TypeAndBitNonTerm:
+            additierRule();
             break;
         case TypeEndofAndNonTerm:
+            if (lexType == TypeBitAnd)
+                endofAndRule();
+            else if (lexType == TypeEndComma || lexType == TypeComma || lexType == TypeRightRB)
+                epsilon();
+            else this->scanner->printError(
+                    const_cast<char *>("Expected comparison operator"),
+                    this->magazine[this->curMagPtr].lex
+                    );
             break;
         case TypeComparisonNonTerm:
+            comparisonRule();
             break;
         case TypeEndofComparisonNonTerm:
+            if (isComparisonSign(lexType))
+                endofComparisonRule();
+            else if (lexType == TypeEndComma || lexType == TypeComma || lexType == TypeRightRB)
+                epsilon();
+            else this->scanner->printError(
+                        const_cast<char *>("Expected comparison operator"),
+                        this->magazine[this->curMagPtr].lex
+                );
             break;
         case TypeCompSignNonTerm:
+            if (lexType == TypeEqual)
+                compSignE();
+            else if (lexType == TypeNotEqual)
+                compSignNE();
+            else if (lexType == TypeLess)
+                compSignL();
+            else if (lexType == TypeLessOrEqual)
+                compSignLOE();
+            else if (lexType == TypeMore)
+                compSignG();
+            else if (lexType == TypeMoreOrEqual)
+                compSignGOE();
+            else this->scanner->printError(
+                        const_cast<char *>("Expected comparison operator (==, !=, <, <=, >, >=)"),
+                        this->magazine[this->curMagPtr].lex
+                );
             break;
         case TypeAdditierNonTerm:
+            additierRule();
             break;
         case TypeEndofAdditierNonTerm:
+            if (lexType == TypeAdd)
+                endofAdditierRule1();
+            else if (lexType == TypeSub)
+                endofAdditierRule2();
+            else if (lexType == TypeEndComma || lexType == TypeComma || lexType == TypeRightRB)
+                epsilon();
+            else this->scanner->printError(
+                    const_cast<char *>("Expected add or sub operators"),
+                    this->magazine[this->curMagPtr].lex
+                    );
             break;
         case TypeMultiplierNonTerm:
+            multiplierRule();
             break;
         case TypeEndofMultiplierNonTerm:
+            if (lexType == TypeMul)
+                endofMultiplierRule1();
+            else if (lexType == TypeDiv)
+                endofMultiplierRule2();
+            else if (lexType == TypeDivPart)
+                endofMultiplierRule3();
+            else if (lexType == TypeEndComma || lexType == TypeComma || lexType == TypeRightRB)
+                epsilon();
+            else this->scanner->printError(
+                    const_cast<char *>("Expected mul, div or div-part operators"),
+                    this->magazine[this->curMagPtr].lex
+                    );
             break;
         case TypeBasicExprNonTerm:
+            if (lexType == TypeIdent)
+                basicExprRule1();
+            else if (isConst(lexType)) {
+                if (lexType == TypeConstExp)
+                    basicExprRule2Exp();
+                else if (lexType == TypeConstHex)
+                    basicExprRule2Hex();
+                else if (lexType == TypeConstInt)
+                    basicExprRule2Int();
+            } else if (lexType == TypeLeftRB)
+                basicExprRule3();
+            else this->scanner->printError(
+                    const_cast<char *>("Expected identifier, constant or high-privilege expression"),
+                    this->magazine[this->curMagPtr].lex
+                    );
             break;
         case TypePreIdentNonTerm:
+            preIdentRule();
             break;
         case TypeEndofIdentNonTerm:
+            if (lexType == TypeDot)
+                endofIdentRule();
+            else if (lexType == TypeAssign || lexType == TypeEndComma || lexType == TypeComma || lexType == TypeRightRB)
+                epsilon();
+            else this->scanner->printError(
+                    const_cast<char *>("Expected identifier of structure operator"),
+                    this->magazine[this->curMagPtr].lex
+                    );
             break;
         default:
             this->scanner->printError(
