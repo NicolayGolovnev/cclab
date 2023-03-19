@@ -50,7 +50,29 @@ void Magazine::epsilon() {
 
 void Magazine::run() {
     int flag = 1;
+    this->magazine[this->curMagPtr].typeSymb = TypeProgNonTerm;
+    this->magazine[this->curMagPtr].term = false;
+    this->ptrUp();
 
+    TypeLex lex;
+    int type = this->scanner->scan(lex);
+    while (flag) {
+        if (this->magazine[this->curMagPtr].term) {
+            if (this->magazine[this->curMagPtr].typeSymb == type) {
+                // Тип в магазине совпадает с отсканированным типом
+                if (type == TypeEnd) flag = 0;
+                else {
+                    type = this->scanner->scan(lex);
+                    this->ptrDown();
+                }
+            } else
+                this->scanner->printError(
+                        const_cast<char *>("Wrong symbol - expected another lexeme"), lex
+                        );
+
+        } else
+            this->analyzeNonTerm(type);
+    }
 }
 
 void Magazine::analyzeNonTerm(int lexType) {
@@ -216,7 +238,7 @@ void Magazine::analyzeNonTerm(int lexType) {
                     );
             break;
         case TypeAndBitNonTerm:
-            additierRule();
+            andBitRule();
             break;
         case TypeEndofAndNonTerm:
             if (lexType == TypeBitAnd)
