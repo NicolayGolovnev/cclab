@@ -1,15 +1,7 @@
-struct abc {
-    long a, b = 5;
-    const short m = 0x1;
-    const int exponent = 5e+10;
-};
-
 int main()
 {
-	int a, b = 2, c = 3;
-	long long num = 0x1f;
-
-	for (int i = 0; i < c; i++)
+    b = b;
+	for (int i = 0; i < c; i = i+1)
 	{
 		short why = 3;
 		b = b + (5 | 3) % 2 + why;

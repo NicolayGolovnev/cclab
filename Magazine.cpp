@@ -57,33 +57,36 @@ void Magazine::run() {
     TypeLex lex;
     int type = this->scanner->scan(lex);
     while (flag) {
-        if (this->magazine[this->curMagPtr].term) {
-            if (this->magazine[this->curMagPtr].typeSymb == type) {
+        if (this->magazine[this->curMagPtr - 1].term) {
+            if (this->magazine[this->curMagPtr - 1].typeSymb == type) {
                 // Тип в магазине совпадает с отсканированным типом
                 if (type == TypeEnd) flag = 0;
                 else {
                     type = this->scanner->scan(lex);
                     this->ptrDown();
                 }
-            } else
+            } else {
+                std::string errorMsg = "Wrong symbol - expected another lexeme with type " + std::to_string(type);
                 this->scanner->printError(
-                        const_cast<char *>("Wrong symbol - expected another lexeme"), lex
-                        );
+                        const_cast<char *>(errorMsg.c_str()), lex
+                );
+            }
+
 
         } else
-            this->analyzeNonTerm(type);
+            this->analyzeNonTerm(type, lex);
     }
 }
 
-void Magazine::analyzeNonTerm(int lexType) {
-    switch (this->magazine[this->curMagPtr].typeSymb) {
+void Magazine::analyzeNonTerm(int lexType, char *lex) {
+    switch (this->magazine[this->curMagPtr - 1].typeSymb) {
         case TypeProgNonTerm:
             if (lexType == TypeStruct || lexType == TypeConst || isType(lexType))
                 progRule();
             else if (lexType == TypeEnd) epsilon();
             else this->scanner->printError(
                     const_cast<char *>("Expected description or end of program"),
-                    this->magazine[this->curMagPtr].lex
+                    lex
                     );
             break;
         case TypeDescriptionNonTerm:
@@ -95,20 +98,20 @@ void Magazine::analyzeNonTerm(int lexType) {
                 descriptionRule3();
             else this->scanner->printError(
                         const_cast<char *>("Expected description of structure, const-vars, vars or main-function"),
-                        this->magazine[this->curMagPtr].lex
+                        lex
                         );
             break;
         case TypeStructNonTerm:
             structRule();
             break;
         case TypeStructVarsNonTerm:
-            if (isType(lexType))
+            if (isType(lexType) || lexType == TypeConst)
                 structVarsRule();
             else if (lexType == TypeRightFB)
                 epsilon();
             else this->scanner->printError(
                     const_cast<char *>("Expected vars description of structure"),
-                    this->magazine[this->curMagPtr].lex
+                    lex
                     );
             break;
         case TypeTypeNonTerm:
@@ -125,11 +128,11 @@ void Magazine::analyzeNonTerm(int lexType) {
                     typeRuleIdent();
                 else this->scanner->printError(
                         const_cast<char *>("Expected correct type of var or structure"),
-                        this->magazine[this->curMagPtr].lex
+                        lex
                         );
             } else this->scanner->printError(
                     const_cast<char *>("Expected type \'int\', \'short\', \'long\', \'double\' or identifier of a structure"),
-                    this->magazine[this->curMagPtr].lex
+                    lex
                     );
             break;
         case TypeMainOrVarsNonTerm:
@@ -139,7 +142,7 @@ void Magazine::analyzeNonTerm(int lexType) {
                 mainOrVarsRule2();
             else this->scanner->printError(
                     const_cast<char *>("Expected description of main-function or var-list"),
-                    this->magazine[this->curMagPtr].lex
+                    lex
                     );
             break;
         case TypeMainNonTerm:
@@ -152,7 +155,7 @@ void Magazine::analyzeNonTerm(int lexType) {
                 epsilon();
             else this->scanner->printError(
                     const_cast<char *>("Expected symbol \';\' or continue of var-list"),
-                    this->magazine[this->curMagPtr].lex
+                    lex
                     );
             break;
         case TypeMayEqualNonTerm:
@@ -162,17 +165,21 @@ void Magazine::analyzeNonTerm(int lexType) {
                 epsilon();
             else this->scanner->printError(
                     const_cast<char *>("Expected operation of assign"),
-                    this->magazine[this->curMagPtr].lex
+                    lex
                     );
             break;
         case TypeVarsNonTerm:
-            varsRule();
+            if (isType(lexType))
+                varsRule1();
+            else if (lexType == TypeConst)
+                varsRule2();
             break;
         case TypeCompoundOperatorNonTerm:
             compoundOperatorRule();
             break;
         case TypeCompoundBodyNonTerm:
             if (isType(lexType))
+                // TODO поставить lookForward(1) - так как оператор присваивания и описание переменных начинаются с идентификатора (может быть типом)
                 compoundBodyRule1();
             else if (lexType == TypeEndComma || lexType == TypeFor || lexType == TypeIdent || lexType == TypeLeftFB)
                 compoundBodyRule2();
@@ -180,7 +187,7 @@ void Magazine::analyzeNonTerm(int lexType) {
                 epsilon();
             else this->scanner->printError(
                     const_cast<char *>("Expected vars or operators in compound body"),
-                    this->magazine[this->curMagPtr].lex
+                    lex
                     );
             break;
         case TypeOperatorNonTerm:
@@ -192,7 +199,7 @@ void Magazine::analyzeNonTerm(int lexType) {
                 operatorRule3();
             else this->scanner->printError(
                     const_cast<char *>("Expected simple or compound operators"),
-                    this->magazine[this->curMagPtr].lex
+                    lex
                     );
             break;
         case TypeSimpleOperatorNonTerm:
@@ -202,7 +209,7 @@ void Magazine::analyzeNonTerm(int lexType) {
                 simpleOperatorRule2();
             else this->scanner->printError(
                     const_cast<char *>("Expected for or equal operators"),
-                    this->magazine[this->curMagPtr].lex
+                    lex
                     );
             break;
         case TypeForNonTerm:
@@ -221,7 +228,7 @@ void Magazine::analyzeNonTerm(int lexType) {
                 epsilon();
             else this->scanner->printError(
                     const_cast<char *>("Expected or-bit operator"),
-                    this->magazine[this->curMagPtr].lex
+                    lex
                     );
             break;
         case TypeXorBitNonTerm:
@@ -230,11 +237,11 @@ void Magazine::analyzeNonTerm(int lexType) {
         case TypeEndofXorNonTerm:
             if (lexType == TypeBitXor)
                 endofXorRule();
-            else if (lexType == TypeEndComma || lexType == TypeComma || lexType == TypeRightRB)
+            else if (lexType == TypeEndComma || lexType == TypeComma || lexType == TypeRightRB || lexType == TypeBitAnd)
                 epsilon();
             else this->scanner->printError(
                     const_cast<char *>("Expected xor-bit operator"),
-                    this->magazine[this->curMagPtr].lex
+                    lex
                     );
             break;
         case TypeAndBitNonTerm:
@@ -243,11 +250,12 @@ void Magazine::analyzeNonTerm(int lexType) {
         case TypeEndofAndNonTerm:
             if (lexType == TypeBitAnd)
                 endofAndRule();
-            else if (lexType == TypeEndComma || lexType == TypeComma || lexType == TypeRightRB)
+            else if (lexType == TypeEndComma || lexType == TypeComma || lexType == TypeRightRB
+                || lexType == TypeBitAnd || lexType == TypeBitXor)
                 epsilon();
             else this->scanner->printError(
-                    const_cast<char *>("Expected comparison operator"),
-                    this->magazine[this->curMagPtr].lex
+                    const_cast<char *>("Expected and-bit operator"),
+                    lex
                     );
             break;
         case TypeComparisonNonTerm:
@@ -256,11 +264,12 @@ void Magazine::analyzeNonTerm(int lexType) {
         case TypeEndofComparisonNonTerm:
             if (isComparisonSign(lexType))
                 endofComparisonRule();
-            else if (lexType == TypeEndComma || lexType == TypeComma || lexType == TypeRightRB)
+            else if (lexType == TypeEndComma || lexType == TypeComma || lexType == TypeRightRB
+                || lexType == TypeBitAnd || lexType == TypeBitXor || lexType == TypeBitOr)
                 epsilon();
             else this->scanner->printError(
                         const_cast<char *>("Expected comparison operator"),
-                        this->magazine[this->curMagPtr].lex
+                        lex
                 );
             break;
         case TypeCompSignNonTerm:
@@ -278,7 +287,7 @@ void Magazine::analyzeNonTerm(int lexType) {
                 compSignGOE();
             else this->scanner->printError(
                         const_cast<char *>("Expected comparison operator (==, !=, <, <=, >, >=)"),
-                        this->magazine[this->curMagPtr].lex
+                        lex
                 );
             break;
         case TypeAdditierNonTerm:
@@ -289,11 +298,12 @@ void Magazine::analyzeNonTerm(int lexType) {
                 endofAdditierRule1();
             else if (lexType == TypeSub)
                 endofAdditierRule2();
-            else if (lexType == TypeEndComma || lexType == TypeComma || lexType == TypeRightRB)
+            else if (lexType == TypeEndComma || lexType == TypeComma || lexType == TypeRightRB
+                || lexType == TypeBitAnd || lexType == TypeBitXor || lexType == TypeBitOr || isComparisonSign(lexType))
                 epsilon();
             else this->scanner->printError(
                     const_cast<char *>("Expected add or sub operators"),
-                    this->magazine[this->curMagPtr].lex
+                    lex
                     );
             break;
         case TypeMultiplierNonTerm:
@@ -306,11 +316,13 @@ void Magazine::analyzeNonTerm(int lexType) {
                 endofMultiplierRule2();
             else if (lexType == TypeDivPart)
                 endofMultiplierRule3();
-            else if (lexType == TypeEndComma || lexType == TypeComma || lexType == TypeRightRB)
+            else if (lexType == TypeEndComma || lexType == TypeComma || lexType == TypeRightRB
+                || lexType == TypeBitAnd || lexType == TypeBitXor || lexType == TypeBitOr
+                || isComparisonSign(lexType) || lexType == TypeAdd || lexType == TypeSub)
                 epsilon();
             else this->scanner->printError(
                     const_cast<char *>("Expected mul, div or div-part operators"),
-                    this->magazine[this->curMagPtr].lex
+                    lex
                     );
             break;
         case TypeBasicExprNonTerm:
@@ -327,7 +339,7 @@ void Magazine::analyzeNonTerm(int lexType) {
                 basicExprRule3();
             else this->scanner->printError(
                     const_cast<char *>("Expected identifier, constant or high-privilege expression"),
-                    this->magazine[this->curMagPtr].lex
+                    lex
                     );
             break;
         case TypePreIdentNonTerm:
@@ -336,17 +348,19 @@ void Magazine::analyzeNonTerm(int lexType) {
         case TypeEndofIdentNonTerm:
             if (lexType == TypeDot)
                 endofIdentRule();
-            else if (lexType == TypeAssign || lexType == TypeEndComma || lexType == TypeComma || lexType == TypeRightRB)
+            else if (lexType == TypeAssign || lexType == TypeEndComma || lexType == TypeComma || lexType == TypeRightRB
+                || lexType == TypeBitAnd || lexType == TypeBitXor || lexType == TypeBitOr || isComparisonSign(lexType)
+                || lexType == TypeAdd || lexType == TypeSub || lexType == TypeMul || lexType == TypeDiv || lexType == TypeDivPart)
                 epsilon();
             else this->scanner->printError(
                     const_cast<char *>("Expected identifier of structure operator"),
-                    this->magazine[this->curMagPtr].lex
+                    lex
                     );
             break;
         default:
             this->scanner->printError(
                     const_cast<char*>("Unexpected type of non-terminal from MP-automaton"),
-                    this->magazine[this->curMagPtr].lex
+                    lex
                     );
     }
 }
@@ -356,9 +370,11 @@ void Magazine::progRule() {
 
     this->magazine[this->curMagPtr].typeSymb = TypeProgNonTerm;
     this->magazine[this->curMagPtr].term = false;
+    this->ptrUp();
 
     this->magazine[this->curMagPtr].typeSymb = TypeDescriptionNonTerm;
     this->magazine[this->curMagPtr].term = false;
+    this->ptrUp();
 }
 
 void Magazine::descriptionRule1() {
@@ -366,6 +382,7 @@ void Magazine::descriptionRule1() {
 
     this->magazine[this->curMagPtr].typeSymb = TypeStructNonTerm;
     this->magazine[this->curMagPtr].term = false;
+    this->ptrUp();
 }
 
 void Magazine::descriptionRule2() {
@@ -411,7 +428,7 @@ void Magazine::structRule() {
     this->magazine[this->curMagPtr].term = true;
     this->ptrUp();
 
-    this->magazine[this->curMagPtr].typeSymb = TypeMainOrVarsNonTerm;
+    this->magazine[this->curMagPtr].typeSymb = TypeStructVarsNonTerm;
     this->magazine[this->curMagPtr].term = false;
     this->ptrUp();
 
@@ -560,7 +577,7 @@ void Magazine::mayEqualRule() {
     this->ptrUp();
 }
 
-void Magazine::varsRule() {
+void Magazine::varsRule1() {
     this->ptrDown();
 
     this->magazine[this->curMagPtr].typeSymb = TypeEndComma;
@@ -581,6 +598,34 @@ void Magazine::varsRule() {
 
     this->magazine[this->curMagPtr].typeSymb = TypeTypeNonTerm;
     this->magazine[this->curMagPtr].term = false;
+    this->ptrUp();
+}
+
+void Magazine::varsRule2() {
+    this->ptrDown();
+
+    this->magazine[this->curMagPtr].typeSymb = TypeEndComma;
+    this->magazine[this->curMagPtr].term = true;
+    this->ptrUp();
+
+    this->magazine[this->curMagPtr].typeSymb = TypeEndofVarList;
+    this->magazine[this->curMagPtr].term = false;
+    this->ptrUp();
+
+    this->magazine[this->curMagPtr].typeSymb = TypeMayEqualNonTerm;
+    this->magazine[this->curMagPtr].term = false;
+    this->ptrUp();
+
+    this->magazine[this->curMagPtr].typeSymb = TypeIdent;
+    this->magazine[this->curMagPtr].term = true;
+    this->ptrUp();
+
+    this->magazine[this->curMagPtr].typeSymb = TypeTypeNonTerm;
+    this->magazine[this->curMagPtr].term = false;
+    this->ptrUp();
+
+    this->magazine[this->curMagPtr].typeSymb = TypeConst;
+    this->magazine[this->curMagPtr].term = true;
     this->ptrUp();
 }
 
@@ -607,7 +652,7 @@ void Magazine::compoundBodyRule1() {
     this->magazine[this->curMagPtr].term = false;
     this->ptrUp();
 
-    this->magazine[this->curMagPtr].typeSymb = TypeMainOrVarsNonTerm;
+    this->magazine[this->curMagPtr].typeSymb = TypeVarsNonTerm;
     this->magazine[this->curMagPtr].term = false;
     this->ptrUp();
 }
@@ -699,7 +744,7 @@ void Magazine::forRule() {
     this->magazine[this->curMagPtr].term = false;
     this->ptrUp();
 
-    this->magazine[this->curMagPtr].typeSymb = TypeRightRB;
+    this->magazine[this->curMagPtr].typeSymb = TypeLeftRB;
     this->magazine[this->curMagPtr].term = true;
     this->ptrUp();
 
@@ -710,10 +755,6 @@ void Magazine::forRule() {
 
 void Magazine::equalRule() {
     this->ptrDown();
-
-    this->magazine[this->curMagPtr].typeSymb = TypeEndComma;
-    this->magazine[this->curMagPtr].term = true;
-    this->ptrUp();
 
     this->magazine[this->curMagPtr].typeSymb = TypeExprNonTerm;
     this->magazine[this->curMagPtr].term = false;
@@ -819,7 +860,7 @@ void Magazine::comparisonRule() {
     this->magazine[this->curMagPtr].term = false;
     this->ptrUp();
 
-    this->magazine[this->curMagPtr].typeSymb = TypeComparisonNonTerm;
+    this->magazine[this->curMagPtr].typeSymb = TypeAdditierNonTerm;
     this->magazine[this->curMagPtr].term = false;
     this->ptrUp();
 }

@@ -50,7 +50,8 @@ private:
     void mainRule();
     void endofVarListRule();
     void mayEqualRule();
-    void varsRule();
+    void varsRule1();
+    void varsRule2();
 
     void compoundOperatorRule();
     void compoundBodyRule1();
@@ -100,7 +101,7 @@ public:
     Magazine(char *filename);
 
     void run();
-    void analyzeNonTerm(int lexType);
+    void analyzeNonTerm(int lexType, char *lex);
 };
 
 

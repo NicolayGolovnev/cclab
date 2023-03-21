@@ -1,10 +1,10 @@
 #include <iostream>
 #include "Magazine.h"
 
-int main() {
+int main(int argc, char *argv[]) {
     Magazine *analyze;
+    char* fileName = const_cast<char*>("test-debug.txt");
 
-    char* fileName = const_cast<char*>("test1.txt");
     analyze = new Magazine(fileName);
     analyze->run();
     return 0;

@@ -8,7 +8,7 @@ int testScanner(int argc, char *argv[])
     TypeLex lex;
     int type;
 
-    char* fileName = const_cast<char*>("test3.txt");
+    char* fileName = const_cast<char*>("test-debug.txt");
     if (argc <= 1)
         sc = new Scaner(fileName);
     else

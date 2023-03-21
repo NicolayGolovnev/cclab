@@ -35,20 +35,20 @@ void Scaner::printError(char* error, char* lex, int _line, int _pos) {
     }
     exit(-220);
 }
-// scaner->printError(const_cast<char *>("Expected one of the variable types - int, short, long, double -, or identifier"), lex);
+
 void Scaner::printError(char* error, char* lex) {
     if ((line == -1) && (pos == -1)) {
         if (lex[0] == '\0')
             printf("Error: %s\n", error);
         else
-            printf("Error: %s. Wrong symbol %s\n", error, lex);
+            printf("Error: %s. Wrong symbol \'%s\'\n", error, lex);
     }
     else {
         if (lex[0] == '\0')
-            printf("Error: %s, symbol %s in line %d, position %d\n",
+            printf("Error: %s, symbol \'%s\' in line %d, position %d\n",
                     error, lex, this->getLine() + 1, this->getPos() - this->getNewLinePos() + 1);
         else
-            printf("Error: %s. Wrong symbol %s in line %d, position %d\n",
+            printf("Error: %s. Wrong symbol \'%s\' in line %d, position %d\n",
                     error, lex, this->getLine() + 1, this->getPos() - this->getNewLinePos() + 1);
     }
     exit(-220);
@@ -127,7 +127,7 @@ exitScan:
                 return TypeErr;
             }
         // expNum
-        if ((text[pos + 1] == 'E') || (text[pos + 1] == 'e')) {
+        if ((text[pos] == 'E') || (text[pos] == 'e')) {
             lex[i++] = text[pos++];
             goto expConst;
         }
