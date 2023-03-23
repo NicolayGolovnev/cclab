@@ -1,0 +1,37 @@
+struct abc {
+    int a, b = 10, c = qqq;
+    int a;c
+    const long b, z = 0xff;
+    const float l;
+};
+
+int main() {
+    int arr;
+    ((()(())
+    int arr, arr = ();
+    long a, a = 10, a = 0xff, a = 21, a = b, a, a, v = 1e+10;
+    const double a = 0, a = 9, a = 10;
+    //return 1;
+    ;;;;;
+    {{}}}
+    short why = 3;
+    b = b + ret;
+    b = b + (5 | 3) % 2 + why;
+    b = b + 1e+5;
+    //(3) - (2) + (1);
+    for (int k = 5; (a) - (s) + 3 >= 22 - 55; s = s + 1) ;
+    for (int i = 0; i < 6; i = i + 1) {
+        short a;
+        a = a + b;
+    }
+    for (int k = 5; (a) - (s) + 3 >= 22 - 55; s = a + 1)
+        for (int k = 5; (a) - (s) + 3 >= 22 - 55; s++)
+            for (int k = 5; (a) - (s) + 3 >= 22 - 55; s = a + 1)
+                for (int k = 5; (a) - (s) + 3 >= 22 - 55; s = a + 1)
+                    for (int k = 5; (a) - (s) + 3 >= 22 - 55; s = a + 1)
+    { ; a = q; }
+    int c = 1;
+    int a, b, c;
+    b.c.d.d.a = 10;
+    b.c.d.d.a = ng;
+}

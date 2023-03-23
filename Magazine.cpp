@@ -50,6 +50,10 @@ void Magazine::epsilon() {
 
 void Magazine::run() {
     int flag = 1;
+    this->magazine[this->curMagPtr].typeSymb = TypeEnd;
+    this->magazine[this->curMagPtr].term = true;
+    this->ptrUp();
+
     this->magazine[this->curMagPtr].typeSymb = TypeProgNonTerm;
     this->magazine[this->curMagPtr].term = false;
     this->ptrUp();
@@ -178,8 +182,9 @@ void Magazine::analyzeNonTerm(int lexType, char *lex) {
             compoundOperatorRule();
             break;
         case TypeCompoundBodyNonTerm:
-            if (isType(lexType))
-                // TODO поставить lookForward(1) - так как оператор присваивания и описание переменных начинаются с идентификатора (может быть типом)
+            // TODO поставить lookForward(1) - так как оператор присваивания и описание переменных начинаются с идентификатора (может быть типом)
+            if ((isType(lexType) || lexType == TypeConst) &&
+                (this->lookForward(1) != TypeAssign && this->lookForward(1) != TypeDot))
                 compoundBodyRule1();
             else if (lexType == TypeEndComma || lexType == TypeFor || lexType == TypeIdent || lexType == TypeLeftFB)
                 compoundBodyRule2();
@@ -237,7 +242,7 @@ void Magazine::analyzeNonTerm(int lexType, char *lex) {
         case TypeEndofXorNonTerm:
             if (lexType == TypeBitXor)
                 endofXorRule();
-            else if (lexType == TypeEndComma || lexType == TypeComma || lexType == TypeRightRB || lexType == TypeBitAnd)
+            else if (lexType == TypeEndComma || lexType == TypeComma || lexType == TypeRightRB || lexType == TypeBitOr)
                 epsilon();
             else this->scanner->printError(
                     const_cast<char *>("Expected xor-bit operator"),
@@ -251,7 +256,7 @@ void Magazine::analyzeNonTerm(int lexType, char *lex) {
             if (lexType == TypeBitAnd)
                 endofAndRule();
             else if (lexType == TypeEndComma || lexType == TypeComma || lexType == TypeRightRB
-                || lexType == TypeBitAnd || lexType == TypeBitXor)
+                || lexType == TypeBitOr || lexType == TypeBitXor)
                 epsilon();
             else this->scanner->printError(
                     const_cast<char *>("Expected and-bit operator"),
@@ -792,7 +797,7 @@ void Magazine::endofExprRule() {
     this->magazine[this->curMagPtr].term = false;
     this->ptrUp();
 
-    this->magazine[this->curMagPtr].typeSymb = TypeBitXor;
+    this->magazine[this->curMagPtr].typeSymb = TypeBitOr;
     this->magazine[this->curMagPtr].term = true;
     this->ptrUp();
 }
