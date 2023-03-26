@@ -1,4 +1,4 @@
-#include "defs.h"
+#include "../defs.h"
 #include "Scaner.h"
 
 #define isNumber (text[pos] <= '9') && (text[pos] >= '0')

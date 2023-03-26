@@ -5,10 +5,11 @@
 #ifndef MAG_ANALYZATOR_MAGAZINE_H
 #define MAG_ANALYZATOR_MAGAZINE_H
 
-// Размер магазина
-#include "defs.h"
-#include "Scaner.h"
+#include <iostream>
+#include "../defs.h"
+#include "../scaner/Scaner.h"
 
+// Размер магазина
 #define MAX_LEN_MAG 1000
 
 enum TypeSymb {
@@ -39,7 +40,8 @@ private:
     void descriptionRule3();
 
     void structRule();
-    void structVarsRule();
+    void structVarsRule1();
+    void structVarsRule2();
     void typeRuleInt();
     void typeRuleShort();
     void typeRuleLong();
@@ -48,14 +50,16 @@ private:
     void mainOrVarsRule1();
     void mainOrVarsRule2();
     void mainRule();
+    void varsRule();
     void endofVarListRule();
     void mayEqualRule();
-    void varsRule1();
-    void varsRule2();
+    void constVarsRule();
+    void endofConstVarListRule();
 
     void compoundOperatorRule();
     void compoundBodyRule1();
     void compoundBodyRule2();
+    void compoundBodyRule3();
 
     void operatorRule1();
     void operatorRule2();
@@ -95,6 +99,7 @@ private:
     void preIdentRule();
     void endofIdentRule();
 
+    std::string parseType(int lexType);
     int lookForward(int toForward);
 
 public:
@@ -102,6 +107,7 @@ public:
 
     void run();
     void analyzeNonTerm(int lexType, char *lex);
+
 };
 
 

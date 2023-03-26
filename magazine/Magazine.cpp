@@ -43,6 +43,86 @@ int Magazine::lookForward(int toForward) {
     return nextType;
 }
 
+std::string Magazine::parseType(int lexType) {
+    switch (lexType) {
+        case TypeIdent:
+            return const_cast<char*>("\'identifier\'");
+        case TypeMain:
+            return const_cast<char*>("keyword \'main\'");
+        case TypeFor:
+            return const_cast<char*>("keyword \'for\'");
+        case TypeStruct:
+            return const_cast<char*>("keyword \'struct\'");
+        case TypeConst:
+            return const_cast<char*>("keyword \'const\'");
+        case TypeInt:
+            return const_cast<char*>("type \'int\'");
+        case TypeShort:
+            return const_cast<char*>("type \'short\'");
+        case TypeLong:
+            return const_cast<char*>("type \'long\'");
+        case TypeDouble:
+            return const_cast<char*>("type \'double\'");
+        case TypeReturn:
+            return const_cast<char*>("keyword \'return\'");
+        case TypeBitOr:
+            return const_cast<char*>("\'|\'");
+        case TypeBitXor:
+            return const_cast<char*>("\'^\'");
+        case TypeBitAnd:
+            return const_cast<char*>("\'&\'");
+        case TypeEqual:
+            return const_cast<char*>("\'==\'");
+        case TypeNotEqual:
+            return const_cast<char*>("\'!=\'");
+        case TypeLess:
+            return const_cast<char*>("\'<\'");
+        case TypeLessOrEqual:
+            return const_cast<char*>("\'<=\'");
+        case TypeMore:
+            return const_cast<char*>("\'>\'");
+        case TypeMoreOrEqual:
+            return const_cast<char*>("\'>=\'");
+        case TypeAdd:
+            return const_cast<char*>("\'+\'");
+        case TypeSub:
+            return const_cast<char*>("\'-\'");
+        case TypeMul:
+            return const_cast<char*>("\'*\'");
+        case TypeDiv:
+            return const_cast<char*>("\'/\'");
+        case TypeDivPart:
+            return const_cast<char*>("\'%\'");
+        case TypeAssign:
+            return const_cast<char*>("\'=\'");
+        case TypeConstInt:
+            return const_cast<char*>("\'int const\'");
+        case TypeConstExp:
+            return const_cast<char*>("\'exp const\'");
+        case TypeConstHex:
+            return const_cast<char*>("\'hex const\'");
+        case TypeLeftRB:
+            return const_cast<char*>("\'(\'");
+        case TypeRightRB:
+            return const_cast<char*>("\')\'");
+        case TypeLeftFB:
+            return const_cast<char*>("\'{\'");
+        case TypeRightFB:
+            return const_cast<char*>("\'}\'");
+        case TypeComma:
+            return const_cast<char*>("\',\'");
+        case TypeEndComma:
+            return const_cast<char*>("\';\'");
+        case TypeDot:
+            return const_cast<char*>("\'.\'");
+        case TypeEnd:
+            return const_cast<char*>("\'#\'");
+        default:
+            std::string errorMsg = "unknown, type of " + std::to_string(lexType);
+            return const_cast<char*>(errorMsg.c_str());
+    }
+}
+
 // Чистим тип символа из магазина
 void Magazine::epsilon() {
     this->curMagPtr--;
@@ -70,7 +150,8 @@ void Magazine::run() {
                     this->ptrDown();
                 }
             } else {
-                std::string errorMsg = "Wrong symbol - expected another lexeme with type " + std::to_string(type);
+                std::string errorMsg = "Wrong symbol - expected another lexeme " +
+                        this->parseType(this->magazine[this->curMagPtr - 1].typeSymb);
                 this->scanner->printError(
                         const_cast<char *>(errorMsg.c_str()), lex
                 );
@@ -109,12 +190,14 @@ void Magazine::analyzeNonTerm(int lexType, char *lex) {
             structRule();
             break;
         case TypeStructVarsNonTerm:
-            if (isType(lexType) || lexType == TypeConst)
-                structVarsRule();
+            if (isType(lexType))
+                structVarsRule1();
+            else if (lexType == TypeConst)
+                structVarsRule2();
             else if (lexType == TypeRightFB)
                 epsilon();
             else this->scanner->printError(
-                    const_cast<char *>("Expected vars description of structure"),
+                    const_cast<char *>("Expected const-vars or vars descriptions of structure"),
                     lex
                     );
             break;
@@ -135,7 +218,7 @@ void Magazine::analyzeNonTerm(int lexType, char *lex) {
                         lex
                         );
             } else this->scanner->printError(
-                    const_cast<char *>("Expected type \'int\', \'short\', \'long\', \'double\' or identifier of a structure"),
+                    const_cast<char *>("Expected type \'int\', \'short\', \'long\', \'double\' or identifier"),
                     lex
                     );
             break;
@@ -152,15 +235,18 @@ void Magazine::analyzeNonTerm(int lexType, char *lex) {
         case TypeMainNonTerm:
             mainRule();
             break;
+        case TypeVarsNonTerm:
+            varsRule();
+            break;
         case TypeEndofVarList:
             if (lexType == TypeComma)
                 endofVarListRule();
             else if (lexType == TypeEndComma)
                 epsilon();
             else this->scanner->printError(
-                    const_cast<char *>("Expected symbol \';\' or continue of var-list"),
-                    lex
-                    );
+                        const_cast<char *>("Expected symbol \';\' or continue of var-list"),
+                        lex
+                );
             break;
         case TypeMayEqualNonTerm:
             if (lexType == TypeAssign)
@@ -168,26 +254,56 @@ void Magazine::analyzeNonTerm(int lexType, char *lex) {
             else if (lexType == TypeComma || lexType == TypeEndComma)
                 epsilon();
             else this->scanner->printError(
-                    const_cast<char *>("Expected operation of assign"),
-                    lex
-                    );
+                        const_cast<char *>("Expected operation of assign"),
+                        lex
+                );
             break;
-        case TypeVarsNonTerm:
-            if (isType(lexType))
-                varsRule1();
-            else if (lexType == TypeConst)
-                varsRule2();
+        case TypeConstVarsNonTerm:
+            constVarsRule();
+            break;
+        case TypeConstTypeNonTerm:
+            if (isType(lexType)) {
+                if (lexType == TypeInt)
+                    typeRuleInt();
+                else if (lexType == TypeShort)
+                    typeRuleShort();
+                else if (lexType == TypeLong)
+                    typeRuleLong();
+                else if (lexType == TypeDouble)
+                    typeRuleDouble();
+                else this->scanner->printError(
+                            const_cast<char *>("Expected correct type of const"),
+                            lex
+                    );
+            } else this->scanner->printError(
+                        const_cast<char *>("Expected type \'int\', \'short\', \'long\', \'double\' of a const list"),
+                        lex
+                );
+            break;
+        case TypeEndofConstVarList:
+            if (lexType == TypeComma)
+                endofConstVarListRule();
+            else if (lexType == TypeEndComma)
+                epsilon();
+            else this->scanner->printError(
+                        const_cast<char *>("Expected symbol \';\' or continue of const-var-list"),
+                        lex
+                );
             break;
         case TypeCompoundOperatorNonTerm:
             compoundOperatorRule();
             break;
         case TypeCompoundBodyNonTerm:
-            // TODO поставить lookForward(1) - так как оператор присваивания и описание переменных начинаются с идентификатора (может быть типом)
-            if ((isType(lexType) || lexType == TypeConst) &&
-                (this->lookForward(1) != TypeAssign && this->lookForward(1) != TypeDot))
+            // lookForward(1) - так как оператор присваивания и описание переменных
+            //                  начинаются с идентификатора (может быть типом)
+            if (isType(lexType) &&
+                (this->lookForward(1) != TypeAssign &&
+                 this->lookForward(1) != TypeDot))
                 compoundBodyRule1();
-            else if (lexType == TypeEndComma || lexType == TypeFor || lexType == TypeIdent || lexType == TypeLeftFB)
+            else if (lexType == TypeConst)
                 compoundBodyRule2();
+            else if (lexType == TypeEndComma || lexType == TypeFor || lexType == TypeIdent || lexType == TypeLeftFB)
+                compoundBodyRule3();
             else if (lexType == TypeRightFB)
                 epsilon();
             else this->scanner->printError(
@@ -405,20 +521,8 @@ void Magazine::descriptionRule2() {
 void Magazine::descriptionRule3() {
     this->ptrDown();
 
-    this->magazine[this->curMagPtr].typeSymb = TypeEndComma;
-    this->magazine[this->curMagPtr].term = true;
-    this->ptrUp();
-
-    this->magazine[this->curMagPtr].typeSymb = TypeEndofVarList;
+    this->magazine[this->curMagPtr].typeSymb = TypeConstVarsNonTerm;
     this->magazine[this->curMagPtr].term = false;
-    this->ptrUp();
-
-    this->magazine[this->curMagPtr].typeSymb = TypeTypeNonTerm;
-    this->magazine[this->curMagPtr].term = false;
-    this->ptrUp();
-
-    this->magazine[this->curMagPtr].typeSymb = TypeConst;
-    this->magazine[this->curMagPtr].term = true;
     this->ptrUp();
 }
 
@@ -450,7 +554,7 @@ void Magazine::structRule() {
     this->ptrUp();
 }
 
-void Magazine::structVarsRule() {
+void Magazine::structVarsRule1() {
     this->ptrDown();
 
     this->magazine[this->curMagPtr].typeSymb = TypeStructVarsNonTerm;
@@ -458,6 +562,18 @@ void Magazine::structVarsRule() {
     this->ptrUp();
 
     this->magazine[this->curMagPtr].typeSymb = TypeVarsNonTerm;
+    this->magazine[this->curMagPtr].term = false;
+    this->ptrUp();
+}
+
+void Magazine::structVarsRule2() {
+    this->ptrDown();
+
+    this->magazine[this->curMagPtr].typeSymb = TypeStructVarsNonTerm;
+    this->magazine[this->curMagPtr].term = false;
+    this->ptrUp();
+
+    this->magazine[this->curMagPtr].typeSymb = TypeConstVarsNonTerm;
     this->magazine[this->curMagPtr].term = false;
     this->ptrUp();
 }
@@ -550,6 +666,30 @@ void Magazine::mainRule() {
     this->ptrUp();
 }
 
+void Magazine::varsRule() {
+    this->ptrDown();
+
+    this->magazine[this->curMagPtr].typeSymb = TypeEndComma;
+    this->magazine[this->curMagPtr].term = true;
+    this->ptrUp();
+
+    this->magazine[this->curMagPtr].typeSymb = TypeEndofVarList;
+    this->magazine[this->curMagPtr].term = false;
+    this->ptrUp();
+
+    this->magazine[this->curMagPtr].typeSymb = TypeMayEqualNonTerm;
+    this->magazine[this->curMagPtr].term = false;
+    this->ptrUp();
+
+    this->magazine[this->curMagPtr].typeSymb = TypeIdent;
+    this->magazine[this->curMagPtr].term = true;
+    this->ptrUp();
+
+    this->magazine[this->curMagPtr].typeSymb = TypeTypeNonTerm;
+    this->magazine[this->curMagPtr].term = false;
+    this->ptrUp();
+}
+
 void Magazine::endofVarListRule() {
     this->ptrDown();
 
@@ -582,54 +722,58 @@ void Magazine::mayEqualRule() {
     this->ptrUp();
 }
 
-void Magazine::varsRule1() {
+void Magazine::constVarsRule() {
     this->ptrDown();
 
     this->magazine[this->curMagPtr].typeSymb = TypeEndComma;
     this->magazine[this->curMagPtr].term = true;
     this->ptrUp();
 
-    this->magazine[this->curMagPtr].typeSymb = TypeEndofVarList;
+    this->magazine[this->curMagPtr].typeSymb = TypeEndofConstVarList;
     this->magazine[this->curMagPtr].term = false;
     this->ptrUp();
 
-    this->magazine[this->curMagPtr].typeSymb = TypeMayEqualNonTerm;
+    this->magazine[this->curMagPtr].typeSymb = TypeExprNonTerm;
     this->magazine[this->curMagPtr].term = false;
+    this->ptrUp();
+
+    this->magazine[this->curMagPtr].typeSymb = TypeAssign;
+    this->magazine[this->curMagPtr].term = true;
     this->ptrUp();
 
     this->magazine[this->curMagPtr].typeSymb = TypeIdent;
     this->magazine[this->curMagPtr].term = true;
     this->ptrUp();
 
-    this->magazine[this->curMagPtr].typeSymb = TypeTypeNonTerm;
-    this->magazine[this->curMagPtr].term = false;
-    this->ptrUp();
-}
-
-void Magazine::varsRule2() {
-    this->ptrDown();
-
-    this->magazine[this->curMagPtr].typeSymb = TypeEndComma;
-    this->magazine[this->curMagPtr].term = true;
-    this->ptrUp();
-
-    this->magazine[this->curMagPtr].typeSymb = TypeEndofVarList;
-    this->magazine[this->curMagPtr].term = false;
-    this->ptrUp();
-
-    this->magazine[this->curMagPtr].typeSymb = TypeMayEqualNonTerm;
-    this->magazine[this->curMagPtr].term = false;
-    this->ptrUp();
-
-    this->magazine[this->curMagPtr].typeSymb = TypeIdent;
-    this->magazine[this->curMagPtr].term = true;
-    this->ptrUp();
-
-    this->magazine[this->curMagPtr].typeSymb = TypeTypeNonTerm;
+    this->magazine[this->curMagPtr].typeSymb = TypeConstTypeNonTerm;
     this->magazine[this->curMagPtr].term = false;
     this->ptrUp();
 
     this->magazine[this->curMagPtr].typeSymb = TypeConst;
+    this->magazine[this->curMagPtr].term = true;
+    this->ptrUp();
+}
+
+void Magazine::endofConstVarListRule() {
+    this->ptrDown();
+
+    this->magazine[this->curMagPtr].typeSymb = TypeEndofConstVarList;
+    this->magazine[this->curMagPtr].term = false;
+    this->ptrUp();
+
+    this->magazine[this->curMagPtr].typeSymb = TypeExprNonTerm;
+    this->magazine[this->curMagPtr].term = false;
+    this->ptrUp();
+
+    this->magazine[this->curMagPtr].typeSymb = TypeAssign;
+    this->magazine[this->curMagPtr].term = true;
+    this->ptrUp();
+
+    this->magazine[this->curMagPtr].typeSymb = TypeIdent;
+    this->magazine[this->curMagPtr].term = true;
+    this->ptrUp();
+
+    this->magazine[this->curMagPtr].typeSymb = TypeComma;
     this->magazine[this->curMagPtr].term = true;
     this->ptrUp();
 }
@@ -663,6 +807,19 @@ void Magazine::compoundBodyRule1() {
 }
 
 void Magazine::compoundBodyRule2() {
+    this->ptrDown();
+
+    this->magazine[this->curMagPtr].typeSymb = TypeCompoundBodyNonTerm;
+    this->magazine[this->curMagPtr].term = false;
+    this->ptrUp();
+
+    this->magazine[this->curMagPtr].typeSymb = TypeConstVarsNonTerm;
+    this->magazine[this->curMagPtr].term = false;
+    this->ptrUp();
+}
+
+
+void Magazine::compoundBodyRule3() {
     this->ptrDown();
 
     this->magazine[this->curMagPtr].typeSymb = TypeCompoundBodyNonTerm;

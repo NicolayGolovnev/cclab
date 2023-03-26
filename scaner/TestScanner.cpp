@@ -1,18 +1,14 @@
 #include "../defs.h"
-#include "../Scaner.h"
+#include "Scaner.h"
 #include <cstdio>
 
-int testScanner(int argc, char *argv[])
-{
+int testScanner() {
     Scaner* sc;
     TypeLex lex;
     int type;
 
-    char* fileName = const_cast<char*>("test-debug.txt");
-    if (argc <= 1)
-        sc = new Scaner(fileName);
-    else
-        sc = new Scaner(argv[1]);
+    char* fileName = const_cast<char*>("/scaner/test1.txt");
+    sc = new Scaner(fileName);
 
     do
     {

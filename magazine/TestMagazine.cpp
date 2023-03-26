@@ -1,7 +1,7 @@
 #include <iostream>
-#include "magazine/Magazine.h"
+#include "Magazine.h"
 
-int main(int argc, char *argv[]) {
+int testMagazine() {
     Magazine *analyze;
     char* fileName = const_cast<char*>("magazine/test-debug.txt");
 

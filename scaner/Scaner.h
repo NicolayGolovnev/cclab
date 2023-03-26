@@ -1,7 +1,7 @@
 #ifndef ANALYZATOR_SCANER_H
 #define ANALYZATOR_SCANER_H
 
-#include "defs.h"
+#include "../defs.h"
 class Scaner{
 private:
     char text[MAX_TEXT];
