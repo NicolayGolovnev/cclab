@@ -1,0 +1,19 @@
+struct s1 {
+    int a, b;
+};
+struct s2 {
+    int a, b;
+    s1 x, y;
+};
+struct s3 {
+    int a, b;
+    s1 x, y;
+    s2 xx, yy;
+};
+
+s3 d;
+int main() {
+    //d.x.x.x.x.x.x.x = 5;
+    d.xx.x.a = 0;
+    return 1;
+}

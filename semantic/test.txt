@@ -1,0 +1,24 @@
+struct abc {
+    int a, b = 10;
+};
+struct abc1 {
+    abc a, b;
+    int d;
+};
+abc x, y;
+
+int main() {
+    int arr, bb;{int arr, bb;{int arr, bb;}}
+    abc a;
+    {
+        int a, bb, arr;
+        {
+            long d;
+            int q;
+            double s;
+            abc f;
+        }
+        double c;
+    }
+    return 1;
+}

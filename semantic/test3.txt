@@ -1,0 +1,27 @@
+struct abc {
+    int a, b = 10;
+};
+struct abc1 {
+    abc a, b;
+    int d;
+};
+const int a = 5;
+
+int main() {
+    int b = 33, bb;
+    b = b + a;
+
+    double q;
+    q = b + (25 / 2);
+
+    abc str;
+    int p;
+    p = str.b;
+    p = p + 100;
+
+    abc1 str2;
+    int pp;
+    pp = str2.a.b;
+
+    return 1;
+}

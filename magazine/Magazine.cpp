@@ -11,6 +11,20 @@
 
 Magazine::Magazine(char *filename) {
     this->scanner = new Scaner(filename);
+
+    // Создание семантического дерева
+    Node node;
+    memcpy(node.id, &("root"), 5);
+    node.dataType = TYPE_NONE;
+    node.objectType = TYPE_UNDEFINED;
+
+    Tree* root = new Tree(nullptr, nullptr, nullptr, &node);
+    root->setCur(root);
+    root->setScaner(this->scanner);
+
+    this->translate->setTree(root);
+    // ------------------------------
+
     this->curMagPtr = 0;
 }
 
@@ -156,9 +170,9 @@ void Magazine::run() {
                         const_cast<char *>(errorMsg.c_str()), lex
                 );
             }
-
-
-        } else
+        } else if (this->magazine[this->curMagPtr - 1].operation)
+            this->analyzeOperation(type, lex);
+        else
             this->analyzeNonTerm(type, lex);
     }
 }
@@ -486,6 +500,17 @@ void Magazine::analyzeNonTerm(int lexType, char *lex) {
     }
 }
 
+void Magazine::analyzeOperation(int lexType, char *lex) {
+    switch (this->magazine[this->curMagPtr - 1].typeSymb) {
+        case TypeDeltaStartDeclarationOper:
+            break;
+        case TypeDeltaEndDeclarationOper:
+            break;
+        case TypeDeltaOper:
+            break;
+    }
+}
+
 void Magazine::progRule() {
     this->ptrDown();
 
@@ -529,6 +554,8 @@ void Magazine::descriptionRule3() {
 void Magazine::structRule() {
     this->ptrDown();
 
+    // TODO return level of tree
+
     this->magazine[this->curMagPtr].typeSymb = TypeEndComma;
     this->magazine[this->curMagPtr].term = true;
     this->ptrUp();
@@ -548,6 +575,8 @@ void Magazine::structRule() {
     this->magazine[this->curMagPtr].typeSymb = TypeIdent;
     this->magazine[this->curMagPtr].term = true;
     this->ptrUp();
+
+    // TODO semInclude DATASTRUCT with new level
 
     this->magazine[this->curMagPtr].typeSymb = TypeStruct;
     this->magazine[this->curMagPtr].term = true;
@@ -649,6 +678,8 @@ void Magazine::mainOrVarsRule2() {
 void Magazine::mainRule() {
     this->ptrDown();
 
+    // TODO return level
+
     this->magazine[this->curMagPtr].typeSymb = TypeCompoundOperatorNonTerm;
     this->magazine[this->curMagPtr].term = false;
     this->ptrUp();
@@ -664,10 +695,14 @@ void Magazine::mainRule() {
     this->magazine[this->curMagPtr].typeSymb = TypeMain;
     this->magazine[this->curMagPtr].term = true;
     this->ptrUp();
+
+    // TODO semInclude main-func with type
 }
 
 void Magazine::varsRule() {
     this->ptrDown();
+
+    // TODO end declaration
 
     this->magazine[this->curMagPtr].typeSymb = TypeEndComma;
     this->magazine[this->curMagPtr].term = true;
@@ -684,6 +719,8 @@ void Magazine::varsRule() {
     this->magazine[this->curMagPtr].typeSymb = TypeIdent;
     this->magazine[this->curMagPtr].term = true;
     this->ptrUp();
+
+    // TODO start declaration ?? (what about struct-type)
 
     this->magazine[this->curMagPtr].typeSymb = TypeTypeNonTerm;
     this->magazine[this->curMagPtr].term = false;
@@ -725,6 +762,8 @@ void Magazine::mayEqualRule() {
 void Magazine::constVarsRule() {
     this->ptrDown();
 
+    // TODO end declaration
+
     this->magazine[this->curMagPtr].typeSymb = TypeEndComma;
     this->magazine[this->curMagPtr].term = true;
     this->ptrUp();
@@ -744,6 +783,8 @@ void Magazine::constVarsRule() {
     this->magazine[this->curMagPtr].typeSymb = TypeIdent;
     this->magazine[this->curMagPtr].term = true;
     this->ptrUp();
+
+    // TODO start declaration
 
     this->magazine[this->curMagPtr].typeSymb = TypeConstTypeNonTerm;
     this->magazine[this->curMagPtr].term = false;
@@ -773,6 +814,8 @@ void Magazine::endofConstVarListRule() {
     this->magazine[this->curMagPtr].term = true;
     this->ptrUp();
 
+    // TODO semInclude const var
+
     this->magazine[this->curMagPtr].typeSymb = TypeComma;
     this->magazine[this->curMagPtr].term = true;
     this->ptrUp();
@@ -780,6 +823,8 @@ void Magazine::endofConstVarListRule() {
 
 void Magazine::compoundOperatorRule() {
     this->ptrDown();
+
+    // TODO return level
 
     this->magazine[this->curMagPtr].typeSymb = TypeRightFB;
     this->magazine[this->curMagPtr].term = true;
@@ -792,6 +837,8 @@ void Magazine::compoundOperatorRule() {
     this->magazine[this->curMagPtr].typeSymb = TypeLeftFB;
     this->magazine[this->curMagPtr].term = true;
     this->ptrUp();
+
+    // TODO set newLevel ??? (what about main)
 }
 
 void Magazine::compoundBodyRule1() {
@@ -925,6 +972,8 @@ void Magazine::equalRule() {
     this->magazine[this->curMagPtr].typeSymb = TypeAssign;
     this->magazine[this->curMagPtr].term = true;
     this->ptrUp();
+
+    // TODO get prevLex for assign variable
 
     this->magazine[this->curMagPtr].typeSymb = TypePreIdentNonTerm;
     this->magazine[this->curMagPtr].term = false;

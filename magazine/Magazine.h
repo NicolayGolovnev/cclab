@@ -8,6 +8,7 @@
 #include <iostream>
 #include "../defs.h"
 #include "../scaner/Scaner.h"
+#include "../translator/Translate.h"
 
 // Размер магазина
 #define MAX_LEN_MAG 1000
@@ -17,14 +18,16 @@ enum TypeSymb {
 };
 
 struct MagOneSymb {
-    bool term;
-    int typeSymb; // Терминалы и нетерминалы в defs.h
+    bool term = false;
+    bool operation = false;
+    int typeSymb; // Терминалы, нетерминалы, операции в defs.h
     TypeLex lex;
 };
 
 class Magazine {
 private:
     Scaner *scanner;
+    Translate* translate;
 
     MagOneSymb magazine[MAX_LEN_MAG];
     int curMagPtr = 0; // Указатель на верхушку магазина
@@ -107,7 +110,8 @@ public:
 
     void run();
     void analyzeNonTerm(int lexType, char *lex);
-
+    void analyzeOperation(int lexType, char *lex);
+    // TODO print end tree func
 };
 
 

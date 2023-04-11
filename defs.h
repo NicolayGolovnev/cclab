@@ -95,6 +95,13 @@ typedef char TypeLex[MAX_LEX];
 
 #define TypeConstTypeNonTerm 150
 
+#define TypeDeltaStartDeclarationOper 160
+#define TypeDeltaEndDeclarationOper 161
+#define TypeDeltaOper 162
+#define TypeDeltaOper 163
+#define TypeDeltaOper 164
+#define TypeDeltaOper 165
+
 #define TypeErr 100
 #define TypeEnd 200
 

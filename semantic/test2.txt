@@ -1,0 +1,40 @@
+struct abc {
+    int a, b = 10;
+};
+struct abc1 {
+    abc a, b;
+    int d;
+};
+const int a = 5;
+
+int main() {
+    //a = 2; // нельзя изменять константу
+    short b = 33, bb;
+    //bb = a; // невозможно привести к типу int
+
+    int q, qq;
+    q = a + b;
+    qq = b;
+
+    double l, k;
+    //k = l; // l неинициализирована
+
+    abc str;
+    abc.a = 1;
+    int p;
+    p = str.a; // непроинициализирована
+    p = str.b;
+
+    abc1 str2;
+    int pp;
+    pp = str2.a.b;
+
+    int checker;
+    checker = str; // нельзя привести структуру к int
+
+    return 1;
+}
+
+int main() { // нельзя описывать функцию более 1 раза
+    return 1;
+}
