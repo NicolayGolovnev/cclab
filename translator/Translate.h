@@ -7,6 +7,7 @@
 
 
 #include "../semantic/Semantic.h"
+#include "TranslatorHelper.h"
 
 class Translate {
     GlobalData* global;
@@ -21,11 +22,20 @@ public:
     // declarations
     void deltaStartDeclaration();
     void deltaEndDeclaration();
-    void deltaSetIdentifier(OBJECT_TYPE objectType);
-    void deltaIdentifier();
+    void deltaSetConstDeclaration();
+    void deltaSetIdentifier();
+    void deltaSetPropertiesForIdent();
+
+    void deltaSetFunc();
+    void deltaSetStruct();
     void deltaSetNewLevel();
     void deltaReturnLevel();
-    // matchLeft
+
+    void deltaFindIdentifier();
+    void deltaCheckIdentType();
+    void deltaDeleteCompound();
+
+    // matchLeft, match
 };
 
 

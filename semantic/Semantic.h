@@ -13,6 +13,11 @@
 
 #pragma once
 
+union DataValue {
+    int vInt;
+    double vDouble;
+};
+
 class Tree;
 // Структура для хранения в таблице идентификаторов
 struct Node {
@@ -20,10 +25,7 @@ struct Node {
     TypeLex id;                 // идентификатор
     DATA_TYPE dataType;         // тип значения - short, int, long, double, объект структуры
 
-    union {
-        int vInt;
-        double vDouble;
-    } dataValue;
+    DataValue dataValue;
 
     //для переменной
     bool isConst;               // Флаг константы
@@ -32,11 +34,22 @@ struct Node {
     Tree* dataStruct = nullptr;           // Ссылка на объекты структуры
 };
 
+struct ExpresData {
+    DATA_TYPE dataType;
+    DataValue dataValue;
+
+    double getResult() {
+        if (dataType == DATA_TYPE::TYPE_INTEGER)
+            return (double) dataValue.vInt;
+        else
+            return dataValue.vDouble;
+    };
+};
+
 class Tree {
 private:
     Node* node;
     Tree *up, *left, *right;
-    // scaner - get line for print some error on it
     Scaner* sc;
 public:
     static Tree* cur;
@@ -52,14 +65,16 @@ public:
 
     void print();
     void printError(std::string error, TypeLex a);
+    void printError(std::string error, Tree* addr);
     int findDuplicate(Tree* addr, TypeLex a);
+    int findDuplicate(Tree* addr);
 
     void setCur(Tree* a);
     void setScaner(Scaner* scaner);
 
     Tree* semanticInclude(TypeLex a, OBJECT_TYPE objType, DATA_TYPE dataType);
     void semanticSetInit(Tree* addr, bool flag);
-    void semanticSetConst(Tree* addr, bool flag);
+    void semanticSetConst(Tree *addr, bool flag);
     void semanticSetStruct(Tree* &addr, Tree* data);
 
     int isStruct(Tree* addr, TypeLex a);
@@ -68,6 +83,7 @@ public:
     void checkConst(TypeLex a);
     void checkConst(Tree* a);
     void semanticTypeCastCheck(TypeLex a, TypeLex b);
+    void semanticTypeCastCheck(Tree* a, TypeLex b);
     void semanticTypeCastCheck(DATA_TYPE a, DATA_TYPE b);
 
     Tree* semanticGetVar(TypeLex a);
@@ -79,9 +95,23 @@ public:
 
     Tree* compoundOperator();
 
+    //#2
     void semanticSetData(Tree* a, DATA_TYPE dt, char* data);
     Tree* copyTree(Tree* from, Tree* up);
-    Tree* deleteCompound(Tree* compoundOperator);
+    Tree* deleteTreeFrom(Tree* a);
+
+    //#3
+    void semanticSetValue(Tree* a, ExpresData* data);
+    void semanticGetData(Tree* a, ExpresData* data);
+    void semanticGetStringValue(TypeLex value, ExpresData* data, int type);
+
+    //#4
+    void semanticMakeBiOperation(ExpresData* data1, ExpresData* data2, int type);
+    void printInfo(Tree* a, std::string beforeText);
+
+    //#5-6
+    static bool flagInterpret;
+
 };
 
 #endif //ANALYZATOR_SEMANTIC_H

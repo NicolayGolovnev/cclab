@@ -5,6 +5,7 @@
 #ifndef MAG_ANALYZATOR_TRANSLATORHELPER_H
 #define MAG_ANALYZATOR_TRANSLATORHELPER_H
 
+#include <stack>
 #include "../defs.h"
 #include "../semantic/Semantic.h"
 
@@ -23,13 +24,17 @@ struct GlobalData {
     TypeLex prevLex;
     // Признак обработки описания
     bool flagDeclaration;
+    bool isConstDeclaration;
     // Семантичееский тип данных
     DATA_TYPE dataType;
 
     // Идентификатор структуры
     TypeLex structIdent;
-    // Буферное дерево (для заполнения структуры, сложных операторов, for, main)
-    Tree* v = nullptr;
+    // Указатель на идентификатор в дереве
+    Tree* identPtr = nullptr;
+
+    // Стек указателей в дереве (для заполнения структуры, сложных операторов, for, main)
+    std::stack<Tree*> levels;
 };
 
 #endif //MAG_ANALYZATOR_TRANSLATORHELPER_H

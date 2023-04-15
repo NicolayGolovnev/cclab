@@ -34,7 +34,6 @@ private:
 
     void ptrUp();
     void ptrDown();
-    void setLexFromScanner(TypeLex iLex);
 
     void epsilon();
     void progRule();

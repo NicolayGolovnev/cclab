@@ -36,11 +36,6 @@ void Magazine::ptrDown() {
     this->curMagPtr--;
 }
 
-void Magazine::setLexFromScanner(TypeLex iLex) {
-    memcpy(this->magazine[this->curMagPtr].lex, iLex, sizeof(iLex));
-//    memcpy(this->lex, iLex, sizeof(iLex));
-}
-
 int Magazine::lookForward(int toForward) {
     TypeLex localLex;
     int position = this->scanner->getPos();
@@ -160,6 +155,7 @@ void Magazine::run() {
                 // Тип в магазине совпадает с отсканированным типом
                 if (type == TypeEnd) flag = 0;
                 else {
+                    this->translate->copyLex(lex);
                     type = this->scanner->scan(lex);
                     this->ptrDown();
                 }
@@ -503,8 +499,25 @@ void Magazine::analyzeNonTerm(int lexType, char *lex) {
 void Magazine::analyzeOperation(int lexType, char *lex) {
     switch (this->magazine[this->curMagPtr - 1].typeSymb) {
         case TypeDeltaStartDeclarationOper:
+            this->translate->deltaStartDeclaration();
             break;
         case TypeDeltaEndDeclarationOper:
+            this->translate->deltaEndDeclaration();
+            break;
+        case TypeDeltaSetConstDeclarationOper:
+            this->translate->deltaSetConstDeclaration();
+            break;
+        case TypeDeltaSetIdentifierOper:
+            this->translate->deltaSetIdentifier();
+            break;
+        case TypeDeltaSetPropertiesForIdentOper:
+            this->translate->deltaSetPropertiesForIdent();
+            break;
+        case TypeDeltaSetMainOper:
+            this->translate->deltaSetFunc();
+            break;
+        case TypeDeltaSetStructOper:
+            this->translate->deltaSetStruct();
             break;
         case TypeDeltaOper:
             break;
@@ -572,11 +585,11 @@ void Magazine::structRule() {
     this->magazine[this->curMagPtr].term = true;
     this->ptrUp();
 
+    // TODO semInclude DATASTRUCT with new level
+
     this->magazine[this->curMagPtr].typeSymb = TypeIdent;
     this->magazine[this->curMagPtr].term = true;
     this->ptrUp();
-
-    // TODO semInclude DATASTRUCT with new level
 
     this->magazine[this->curMagPtr].typeSymb = TypeStruct;
     this->magazine[this->curMagPtr].term = true;
@@ -666,13 +679,19 @@ void Magazine::mainOrVarsRule2() {
     this->magazine[this->curMagPtr].term = false;
     this->ptrUp();
 
+    // TODO set properties for ident
+
     this->magazine[this->curMagPtr].typeSymb = TypeMayEqualNonTerm;
     this->magazine[this->curMagPtr].term = false;
     this->ptrUp();
 
+    // TODO set ident
+
     this->magazine[this->curMagPtr].typeSymb = TypeIdent;
     this->magazine[this->curMagPtr].term = true;
     this->ptrUp();
+
+    // TODO start declaration
 }
 
 void Magazine::mainRule() {
@@ -712,9 +731,13 @@ void Magazine::varsRule() {
     this->magazine[this->curMagPtr].term = false;
     this->ptrUp();
 
+    // TODO set properties for ident
+
     this->magazine[this->curMagPtr].typeSymb = TypeMayEqualNonTerm;
     this->magazine[this->curMagPtr].term = false;
     this->ptrUp();
+
+    // TODO set ident
 
     this->magazine[this->curMagPtr].typeSymb = TypeIdent;
     this->magazine[this->curMagPtr].term = true;
@@ -734,9 +757,13 @@ void Magazine::endofVarListRule() {
     this->magazine[this->curMagPtr].term = false;
     this->ptrUp();
 
+    // TODO set properties for ident
+
     this->magazine[this->curMagPtr].typeSymb = TypeMayEqualNonTerm;
     this->magazine[this->curMagPtr].term = false;
     this->ptrUp();
+
+    // TODO set ident
 
     this->magazine[this->curMagPtr].typeSymb = TypeIdent;
     this->magazine[this->curMagPtr].term = true;
@@ -772,6 +799,8 @@ void Magazine::constVarsRule() {
     this->magazine[this->curMagPtr].term = false;
     this->ptrUp();
 
+    // TODO set properties for ident
+
     this->magazine[this->curMagPtr].typeSymb = TypeExprNonTerm;
     this->magazine[this->curMagPtr].term = false;
     this->ptrUp();
@@ -779,6 +808,8 @@ void Magazine::constVarsRule() {
     this->magazine[this->curMagPtr].typeSymb = TypeAssign;
     this->magazine[this->curMagPtr].term = true;
     this->ptrUp();
+
+    // TODO set ident
 
     this->magazine[this->curMagPtr].typeSymb = TypeIdent;
     this->magazine[this->curMagPtr].term = true;
@@ -802,6 +833,8 @@ void Magazine::endofConstVarListRule() {
     this->magazine[this->curMagPtr].term = false;
     this->ptrUp();
 
+    // TODO set properties for ident
+
     this->magazine[this->curMagPtr].typeSymb = TypeExprNonTerm;
     this->magazine[this->curMagPtr].term = false;
     this->ptrUp();
@@ -810,11 +843,11 @@ void Magazine::endofConstVarListRule() {
     this->magazine[this->curMagPtr].term = true;
     this->ptrUp();
 
+    // TODO set ident
+
     this->magazine[this->curMagPtr].typeSymb = TypeIdent;
     this->magazine[this->curMagPtr].term = true;
     this->ptrUp();
-
-    // TODO semInclude const var
 
     this->magazine[this->curMagPtr].typeSymb = TypeComma;
     this->magazine[this->curMagPtr].term = true;
