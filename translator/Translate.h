@@ -13,11 +13,14 @@ class Translate {
     GlobalData* global;
     Tree* tree;
 
-    OBJECT_TYPE getObjectTypeFromDataType();
+    DATA_TYPE getType(TypeLex lex);
 
 public:
+    Translate();
     void setTree(Tree* tree);
     void copyLex(TypeLex lex);
+
+    void printTree();
 
     // declarations
     void deltaStartDeclaration();
@@ -32,6 +35,7 @@ public:
     void deltaReturnLevel();
 
     void deltaFindIdentifier();
+    void deltaFindIdentifierInStruct();
     void deltaCheckIdentType();
     void deltaDeleteCompound();
 

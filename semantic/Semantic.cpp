@@ -125,26 +125,11 @@ void Tree::printError(std::string error, TypeLex a) {
     exit(-440);
 }
 
-void Tree::printError(std::string error, Tree *addr) {
-    if (!flagInterpret)
-        return ;
-
-    printf("Error: %s on line %d, identifier %s", error.c_str(), sc->getLine() + 1, addr->node->id);
-    exit(-440);
-}
-
 int Tree::findDuplicate(Tree *addr, TypeLex a) {
     if (!flagInterpret)
         return 0;
 
     if (findUpOnLevel(addr, a) == nullptr) return 0;
-    return 1;
-}
-
-int Tree::findDuplicate(Tree *addr) {
-    if (!flagInterpret)
-        return 0;
-    if (findUpOnLevel(addr->up, addr->node->id) == nullptr) return 0;
     return 1;
 }
 
@@ -281,18 +266,6 @@ void Tree::semanticTypeCastCheck(TypeLex a, TypeLex b) {
         exit(-440);
     }
 }
-void Tree::semanticTypeCastCheck(Tree *a, TypeLex b) {
-    if (!flagInterpret)
-        return ;
-
-    DATA_TYPE constDataType = getType(b);
-
-    if (a->node->dataType < constDataType) {
-        printf("Semantic error, line %d: Impossible cast %s to %s, identifier %s", sc->getLine() + 1,
-               types[constDataType].c_str(), types[a->node->dataType].c_str(), a);
-        exit(-440);
-    }
-}
 
 void Tree::semanticTypeCastCheck(DATA_TYPE a, DATA_TYPE b) {
     if (!flagInterpret)
@@ -383,6 +356,13 @@ DATA_TYPE Tree::getType(Tree *a) {
         return (DATA_TYPE) 0;
 
     return a->node->dataType;
+}
+
+char* Tree::getIdentifier(Tree* from) {
+    if (!flagInterpret)
+        return nullptr;
+
+    return from->node->id;
 }
 
 Tree *Tree::compoundOperator() {

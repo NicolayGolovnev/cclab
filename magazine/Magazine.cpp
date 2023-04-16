@@ -11,7 +11,7 @@
 
 Magazine::Magazine(char *filename) {
     this->scanner = new Scaner(filename);
-
+    this->translate = new Translate();
     // Создание семантического дерева
     Node node;
     memcpy(node.id, &("root"), 5);
@@ -500,26 +500,61 @@ void Magazine::analyzeOperation(int lexType, char *lex) {
     switch (this->magazine[this->curMagPtr - 1].typeSymb) {
         case TypeDeltaStartDeclarationOper:
             this->translate->deltaStartDeclaration();
-            break;
-        case TypeDeltaEndDeclarationOper:
-            this->translate->deltaEndDeclaration();
+            this->ptrDown();
             break;
         case TypeDeltaSetConstDeclarationOper:
             this->translate->deltaSetConstDeclaration();
+            this->ptrDown();
+            break;
+        case TypeDeltaEndDeclarationOper:
+            this->translate->deltaEndDeclaration();
+            this->ptrDown();
             break;
         case TypeDeltaSetIdentifierOper:
             this->translate->deltaSetIdentifier();
+            this->ptrDown();
             break;
         case TypeDeltaSetPropertiesForIdentOper:
             this->translate->deltaSetPropertiesForIdent();
+            this->ptrDown();
             break;
         case TypeDeltaSetMainOper:
             this->translate->deltaSetFunc();
+            this->ptrDown();
             break;
         case TypeDeltaSetStructOper:
             this->translate->deltaSetStruct();
+            this->ptrDown();
             break;
-        case TypeDeltaOper:
+        case TypeDeltaSetNewLevelOper:
+            this->translate->deltaSetNewLevel();
+            this->ptrDown();
+            break;
+        case TypeDeltaReturnLevelOper:
+            this->translate->deltaReturnLevel();
+            this->ptrDown();
+            break;
+        case TypeDeltaDeleteCompoundOper:
+            this->translate->deltaDeleteCompound();
+            this->ptrDown();
+            break;
+        case TypeDeltaFindIdentifierOper:
+            this->translate->deltaFindIdentifier();
+            this->ptrDown();
+            break;
+        case TypeDeltaFindIdentifierInStructOper:
+            this->translate->deltaFindIdentifierInStruct();
+            this->ptrDown();
+            break;
+        case TypeDeltaCheckIdentTypeOper:
+            this->translate->deltaCheckIdentType();
+            this->ptrDown();
+            break;
+        default:
+            this->scanner->printError(
+                    const_cast<char*>("Unexpected type of operation from MP-automaton"),
+                    nullptr
+                    );
             break;
     }
 }
@@ -529,10 +564,12 @@ void Magazine::progRule() {
 
     this->magazine[this->curMagPtr].typeSymb = TypeProgNonTerm;
     this->magazine[this->curMagPtr].term = false;
+    this->magazine[this->curMagPtr].operation = false;
     this->ptrUp();
 
     this->magazine[this->curMagPtr].typeSymb = TypeDescriptionNonTerm;
     this->magazine[this->curMagPtr].term = false;
+    this->magazine[this->curMagPtr].operation = false;
     this->ptrUp();
 }
 
@@ -541,6 +578,7 @@ void Magazine::descriptionRule1() {
 
     this->magazine[this->curMagPtr].typeSymb = TypeStructNonTerm;
     this->magazine[this->curMagPtr].term = false;
+    this->magazine[this->curMagPtr].operation = false;
     this->ptrUp();
 }
 
@@ -549,10 +587,12 @@ void Magazine::descriptionRule2() {
 
     this->magazine[this->curMagPtr].typeSymb = TypeMainOrVarsNonTerm;
     this->magazine[this->curMagPtr].term = false;
+    this->magazine[this->curMagPtr].operation = false;
     this->ptrUp();
 
     this->magazine[this->curMagPtr].typeSymb = TypeTypeNonTerm;
     this->magazine[this->curMagPtr].term = false;
+    this->magazine[this->curMagPtr].operation = false;
     this->ptrUp();
 }
 
@@ -561,38 +601,53 @@ void Magazine::descriptionRule3() {
 
     this->magazine[this->curMagPtr].typeSymb = TypeConstVarsNonTerm;
     this->magazine[this->curMagPtr].term = false;
+    this->magazine[this->curMagPtr].operation = false;
     this->ptrUp();
 }
 
 void Magazine::structRule() {
     this->ptrDown();
 
-    // TODO return level of tree
+    // return level of tree operation
+    this->magazine[this->curMagPtr].typeSymb = TypeDeltaReturnLevelOper;
+    this->magazine[this->curMagPtr].term = false;
+    this->magazine[this->curMagPtr].operation = true;
+    this->ptrUp();
 
     this->magazine[this->curMagPtr].typeSymb = TypeEndComma;
     this->magazine[this->curMagPtr].term = true;
+    this->magazine[this->curMagPtr].operation = false;
     this->ptrUp();
 
     this->magazine[this->curMagPtr].typeSymb = TypeRightFB;
     this->magazine[this->curMagPtr].term = true;
+    this->magazine[this->curMagPtr].operation = false;
     this->ptrUp();
 
     this->magazine[this->curMagPtr].typeSymb = TypeStructVarsNonTerm;
     this->magazine[this->curMagPtr].term = false;
+    this->magazine[this->curMagPtr].operation = false;
     this->ptrUp();
 
     this->magazine[this->curMagPtr].typeSymb = TypeLeftFB;
     this->magazine[this->curMagPtr].term = true;
+    this->magazine[this->curMagPtr].operation = false;
     this->ptrUp();
 
-    // TODO semInclude DATASTRUCT with new level
+    // semInclude DATASTRUCT with new level operation
+    this->magazine[this->curMagPtr].typeSymb = TypeDeltaSetStructOper;
+    this->magazine[this->curMagPtr].term = false;
+    this->magazine[this->curMagPtr].operation = true;
+    this->ptrUp();
 
     this->magazine[this->curMagPtr].typeSymb = TypeIdent;
     this->magazine[this->curMagPtr].term = true;
+    this->magazine[this->curMagPtr].operation = false;
     this->ptrUp();
 
     this->magazine[this->curMagPtr].typeSymb = TypeStruct;
     this->magazine[this->curMagPtr].term = true;
+    this->magazine[this->curMagPtr].operation = false;
     this->ptrUp();
 }
 
@@ -601,10 +656,12 @@ void Magazine::structVarsRule1() {
 
     this->magazine[this->curMagPtr].typeSymb = TypeStructVarsNonTerm;
     this->magazine[this->curMagPtr].term = false;
+    this->magazine[this->curMagPtr].operation = false;
     this->ptrUp();
 
     this->magazine[this->curMagPtr].typeSymb = TypeVarsNonTerm;
     this->magazine[this->curMagPtr].term = false;
+    this->magazine[this->curMagPtr].operation = false;
     this->ptrUp();
 }
 
@@ -613,10 +670,12 @@ void Magazine::structVarsRule2() {
 
     this->magazine[this->curMagPtr].typeSymb = TypeStructVarsNonTerm;
     this->magazine[this->curMagPtr].term = false;
+    this->magazine[this->curMagPtr].operation = false;
     this->ptrUp();
 
     this->magazine[this->curMagPtr].typeSymb = TypeConstVarsNonTerm;
     this->magazine[this->curMagPtr].term = false;
+    this->magazine[this->curMagPtr].operation = false;
     this->ptrUp();
 }
 
@@ -625,6 +684,7 @@ void Magazine::typeRuleInt() {
 
     this->magazine[this->curMagPtr].typeSymb = TypeInt;
     this->magazine[this->curMagPtr].term = true;
+    this->magazine[this->curMagPtr].operation = false;
     this->ptrUp();
 }
 
@@ -633,6 +693,7 @@ void Magazine::typeRuleShort() {
 
     this->magazine[this->curMagPtr].typeSymb = TypeShort;
     this->magazine[this->curMagPtr].term = true;
+    this->magazine[this->curMagPtr].operation = false;
     this->ptrUp();
 }
 
@@ -641,6 +702,7 @@ void Magazine::typeRuleLong() {
 
     this->magazine[this->curMagPtr].typeSymb = TypeLong;
     this->magazine[this->curMagPtr].term = true;
+    this->magazine[this->curMagPtr].operation = false;
     this->ptrUp();
 }
 
@@ -649,6 +711,7 @@ void Magazine::typeRuleDouble() {
 
     this->magazine[this->curMagPtr].typeSymb = TypeDouble;
     this->magazine[this->curMagPtr].term = true;
+    this->magazine[this->curMagPtr].operation = false;
     this->ptrUp();
 }
 
@@ -657,6 +720,7 @@ void Magazine::typeRuleIdent() {
 
     this->magazine[this->curMagPtr].typeSymb = TypeIdent;
     this->magazine[this->curMagPtr].term = true;
+    this->magazine[this->curMagPtr].operation = false;
     this->ptrUp();
 }
 
@@ -665,6 +729,7 @@ void Magazine::mainOrVarsRule1() {
 
     this->magazine[this->curMagPtr].typeSymb = TypeMainNonTerm;
     this->magazine[this->curMagPtr].term = false;
+    this->magazine[this->curMagPtr].operation = false;
     this->ptrUp();
 }
 
@@ -673,80 +738,129 @@ void Magazine::mainOrVarsRule2() {
 
     this->magazine[this->curMagPtr].typeSymb = TypeEndComma;
     this->magazine[this->curMagPtr].term = true;
+    this->magazine[this->curMagPtr].operation = false;
     this->ptrUp();
 
     this->magazine[this->curMagPtr].typeSymb = TypeEndofVarList;
     this->magazine[this->curMagPtr].term = false;
+    this->magazine[this->curMagPtr].operation = false;
     this->ptrUp();
 
-    // TODO set properties for ident
+    // Set properties for identifier operation
+    this->magazine[this->curMagPtr].typeSymb = TypeDeltaSetPropertiesForIdentOper;
+    this->magazine[this->curMagPtr].term = false;
+    this->magazine[this->curMagPtr].operation = true;
+    this->ptrUp();
 
     this->magazine[this->curMagPtr].typeSymb = TypeMayEqualNonTerm;
     this->magazine[this->curMagPtr].term = false;
+    this->magazine[this->curMagPtr].operation = false;
     this->ptrUp();
 
-    // TODO set ident
+    // Set identifier operation
+    this->magazine[this->curMagPtr].typeSymb = TypeDeltaSetIdentifierOper;
+    this->magazine[this->curMagPtr].term = false;
+    this->magazine[this->curMagPtr].operation = true;
+    this->ptrUp();
 
     this->magazine[this->curMagPtr].typeSymb = TypeIdent;
     this->magazine[this->curMagPtr].term = true;
+    this->magazine[this->curMagPtr].operation = false;
     this->ptrUp();
 
-    // TODO start declaration
+    // start declaration operation
+    this->magazine[this->curMagPtr].typeSymb = TypeDeltaStartDeclarationOper;
+    this->magazine[this->curMagPtr].term = false;
+    this->magazine[this->curMagPtr].operation = true;
+    this->ptrUp();
 }
 
 void Magazine::mainRule() {
     this->ptrDown();
 
-    // TODO return level
+    // Return level operation
+    this->magazine[this->curMagPtr].typeSymb = TypeDeltaReturnLevelOper;
+    this->magazine[this->curMagPtr].term = false;
+    this->magazine[this->curMagPtr].operation = true;
+    this->ptrUp();
 
     this->magazine[this->curMagPtr].typeSymb = TypeCompoundOperatorNonTerm;
     this->magazine[this->curMagPtr].term = false;
+    this->magazine[this->curMagPtr].operation = false;
     this->ptrUp();
 
     this->magazine[this->curMagPtr].typeSymb = TypeRightRB;
     this->magazine[this->curMagPtr].term = true;
+    this->magazine[this->curMagPtr].operation = false;
     this->ptrUp();
 
     this->magazine[this->curMagPtr].typeSymb = TypeLeftRB;
     this->magazine[this->curMagPtr].term = true;
+    this->magazine[this->curMagPtr].operation = false;
+    this->ptrUp();
+
+    // semInclude main-func with type operation
+    this->magazine[this->curMagPtr].typeSymb = TypeDeltaSetMainOper;
+    this->magazine[this->curMagPtr].term = false;
+    this->magazine[this->curMagPtr].operation = true;
     this->ptrUp();
 
     this->magazine[this->curMagPtr].typeSymb = TypeMain;
     this->magazine[this->curMagPtr].term = true;
+    this->magazine[this->curMagPtr].operation = false;
     this->ptrUp();
-
-    // TODO semInclude main-func with type
 }
 
 void Magazine::varsRule() {
     this->ptrDown();
 
-    // TODO end declaration
+    // End declaration operation
+    this->magazine[this->curMagPtr].typeSymb = TypeDeltaEndDeclarationOper;
+    this->magazine[this->curMagPtr].term = false;
+    this->magazine[this->curMagPtr].operation = true;
+    this->ptrUp();
 
     this->magazine[this->curMagPtr].typeSymb = TypeEndComma;
     this->magazine[this->curMagPtr].term = true;
+    this->magazine[this->curMagPtr].operation = false;
     this->ptrUp();
 
     this->magazine[this->curMagPtr].typeSymb = TypeEndofVarList;
     this->magazine[this->curMagPtr].term = false;
+    this->magazine[this->curMagPtr].operation = false;
     this->ptrUp();
 
-    // TODO set properties for ident
+    // Set properties for ident operation
+    this->magazine[this->curMagPtr].typeSymb = TypeDeltaSetPropertiesForIdentOper;
+    this->magazine[this->curMagPtr].term = false;
+    this->magazine[this->curMagPtr].operation = true;
+    this->ptrUp();
 
     this->magazine[this->curMagPtr].typeSymb = TypeMayEqualNonTerm;
     this->magazine[this->curMagPtr].term = false;
+    this->magazine[this->curMagPtr].operation = false;
     this->ptrUp();
 
-    // TODO set ident
+    // Set ident operation
+    this->magazine[this->curMagPtr].typeSymb = TypeDeltaSetIdentifierOper;
+    this->magazine[this->curMagPtr].term = false;
+    this->magazine[this->curMagPtr].operation = true;
+    this->ptrUp();
 
     this->magazine[this->curMagPtr].typeSymb = TypeIdent;
     this->magazine[this->curMagPtr].term = true;
+    this->magazine[this->curMagPtr].operation = false;
     this->ptrUp();
 
-    // TODO start declaration ?? (what about struct-type)
+    // Start declaration operation
+    this->magazine[this->curMagPtr].typeSymb = TypeDeltaStartDeclarationOper;
+    this->magazine[this->curMagPtr].term = false;
+    this->magazine[this->curMagPtr].operation = true;
+    this->ptrUp();
 
     this->magazine[this->curMagPtr].typeSymb = TypeTypeNonTerm;
     this->magazine[this->curMagPtr].term = false;
+    this->magazine[this->curMagPtr].operation = false;
     this->ptrUp();
 }
 
@@ -755,22 +869,34 @@ void Magazine::endofVarListRule() {
 
     this->magazine[this->curMagPtr].typeSymb = TypeEndofVarList;
     this->magazine[this->curMagPtr].term = false;
+    this->magazine[this->curMagPtr].operation = false;
     this->ptrUp();
 
-    // TODO set properties for ident
+    // Set properties for ident opeartion
+    this->magazine[this->curMagPtr].typeSymb = TypeDeltaSetPropertiesForIdentOper;
+    this->magazine[this->curMagPtr].term = false;
+    this->magazine[this->curMagPtr].operation = true;
+    this->ptrUp();
 
     this->magazine[this->curMagPtr].typeSymb = TypeMayEqualNonTerm;
     this->magazine[this->curMagPtr].term = false;
+    this->magazine[this->curMagPtr].operation = false;
     this->ptrUp();
 
-    // TODO set ident
+    // Set ident operation
+    this->magazine[this->curMagPtr].typeSymb = TypeDeltaSetIdentifierOper;
+    this->magazine[this->curMagPtr].term = false;
+    this->magazine[this->curMagPtr].operation = true;
+    this->ptrUp();
 
     this->magazine[this->curMagPtr].typeSymb = TypeIdent;
     this->magazine[this->curMagPtr].term = true;
+    this->magazine[this->curMagPtr].operation = false;
     this->ptrUp();
 
     this->magazine[this->curMagPtr].typeSymb = TypeComma;
     this->magazine[this->curMagPtr].term = true;
+    this->magazine[this->curMagPtr].operation = false;
     this->ptrUp();
 }
 
@@ -779,50 +905,80 @@ void Magazine::mayEqualRule() {
 
     this->magazine[this->curMagPtr].typeSymb = TypeExprNonTerm;
     this->magazine[this->curMagPtr].term = false;
+    this->magazine[this->curMagPtr].operation = false;
     this->ptrUp();
 
     this->magazine[this->curMagPtr].typeSymb = TypeAssign;
     this->magazine[this->curMagPtr].term = true;
+    this->magazine[this->curMagPtr].operation = false;
     this->ptrUp();
 }
 
 void Magazine::constVarsRule() {
     this->ptrDown();
 
-    // TODO end declaration
+    // End declaration operation
+    this->magazine[this->curMagPtr].typeSymb = TypeDeltaEndDeclarationOper;
+    this->magazine[this->curMagPtr].term = false;
+    this->magazine[this->curMagPtr].operation = true;
+    this->ptrUp();
 
     this->magazine[this->curMagPtr].typeSymb = TypeEndComma;
     this->magazine[this->curMagPtr].term = true;
+    this->magazine[this->curMagPtr].operation = false;
     this->ptrUp();
 
     this->magazine[this->curMagPtr].typeSymb = TypeEndofConstVarList;
     this->magazine[this->curMagPtr].term = false;
+    this->magazine[this->curMagPtr].operation = false;
     this->ptrUp();
 
-    // TODO set properties for ident
+    // Set properties for ident operation
+    this->magazine[this->curMagPtr].typeSymb = TypeDeltaSetPropertiesForIdentOper;
+    this->magazine[this->curMagPtr].term = false;
+    this->magazine[this->curMagPtr].operation = true;
+    this->ptrUp();
 
     this->magazine[this->curMagPtr].typeSymb = TypeExprNonTerm;
     this->magazine[this->curMagPtr].term = false;
+    this->magazine[this->curMagPtr].operation = false;
     this->ptrUp();
 
     this->magazine[this->curMagPtr].typeSymb = TypeAssign;
     this->magazine[this->curMagPtr].term = true;
+    this->magazine[this->curMagPtr].operation = false;
     this->ptrUp();
 
-    // TODO set ident
+    // Set ident operation
+    this->magazine[this->curMagPtr].typeSymb = TypeDeltaSetIdentifierOper;
+    this->magazine[this->curMagPtr].term = false;
+    this->magazine[this->curMagPtr].operation = true;
+    this->ptrUp();
 
     this->magazine[this->curMagPtr].typeSymb = TypeIdent;
     this->magazine[this->curMagPtr].term = true;
+    this->magazine[this->curMagPtr].operation = false;
     this->ptrUp();
 
-    // TODO start declaration
+    // Start declaration (and const declaration) operations
+    this->magazine[this->curMagPtr].typeSymb = TypeDeltaStartDeclarationOper;
+    this->magazine[this->curMagPtr].term = false;
+    this->magazine[this->curMagPtr].operation = true;
+    this->ptrUp();
+
+    this->magazine[this->curMagPtr].typeSymb = TypeDeltaSetConstDeclarationOper;
+    this->magazine[this->curMagPtr].term = false;
+    this->magazine[this->curMagPtr].operation = true;
+    this->ptrUp();
 
     this->magazine[this->curMagPtr].typeSymb = TypeConstTypeNonTerm;
     this->magazine[this->curMagPtr].term = false;
+    this->magazine[this->curMagPtr].operation = false;
     this->ptrUp();
 
     this->magazine[this->curMagPtr].typeSymb = TypeConst;
     this->magazine[this->curMagPtr].term = true;
+    this->magazine[this->curMagPtr].operation = false;
     this->ptrUp();
 }
 
@@ -831,26 +987,39 @@ void Magazine::endofConstVarListRule() {
 
     this->magazine[this->curMagPtr].typeSymb = TypeEndofConstVarList;
     this->magazine[this->curMagPtr].term = false;
+    this->magazine[this->curMagPtr].operation = false;
     this->ptrUp();
 
-    // TODO set properties for ident
+    // Set properties for ident operation
+    this->magazine[this->curMagPtr].typeSymb = TypeDeltaSetPropertiesForIdentOper;
+    this->magazine[this->curMagPtr].term = false;
+    this->magazine[this->curMagPtr].operation = true;
+    this->ptrUp();
 
     this->magazine[this->curMagPtr].typeSymb = TypeExprNonTerm;
     this->magazine[this->curMagPtr].term = false;
+    this->magazine[this->curMagPtr].operation = false;
     this->ptrUp();
 
     this->magazine[this->curMagPtr].typeSymb = TypeAssign;
     this->magazine[this->curMagPtr].term = true;
+    this->magazine[this->curMagPtr].operation = false;
     this->ptrUp();
 
-    // TODO set ident
+    // Set ident operation
+    this->magazine[this->curMagPtr].typeSymb = TypeDeltaSetIdentifierOper;
+    this->magazine[this->curMagPtr].term = false;
+    this->magazine[this->curMagPtr].operation = true;
+    this->ptrUp();
 
     this->magazine[this->curMagPtr].typeSymb = TypeIdent;
     this->magazine[this->curMagPtr].term = true;
+    this->magazine[this->curMagPtr].operation = false;
     this->ptrUp();
 
     this->magazine[this->curMagPtr].typeSymb = TypeComma;
     this->magazine[this->curMagPtr].term = true;
+    this->magazine[this->curMagPtr].operation = false;
     this->ptrUp();
 }
 
@@ -861,14 +1030,17 @@ void Magazine::compoundOperatorRule() {
 
     this->magazine[this->curMagPtr].typeSymb = TypeRightFB;
     this->magazine[this->curMagPtr].term = true;
+    this->magazine[this->curMagPtr].operation = false;
     this->ptrUp();
 
     this->magazine[this->curMagPtr].typeSymb = TypeCompoundBodyNonTerm;
     this->magazine[this->curMagPtr].term = false;
+    this->magazine[this->curMagPtr].operation = false;
     this->ptrUp();
 
     this->magazine[this->curMagPtr].typeSymb = TypeLeftFB;
     this->magazine[this->curMagPtr].term = true;
+    this->magazine[this->curMagPtr].operation = false;
     this->ptrUp();
 
     // TODO set newLevel ??? (what about main)
@@ -879,10 +1051,12 @@ void Magazine::compoundBodyRule1() {
 
     this->magazine[this->curMagPtr].typeSymb = TypeCompoundBodyNonTerm;
     this->magazine[this->curMagPtr].term = false;
+    this->magazine[this->curMagPtr].operation = false;
     this->ptrUp();
 
     this->magazine[this->curMagPtr].typeSymb = TypeVarsNonTerm;
     this->magazine[this->curMagPtr].term = false;
+    this->magazine[this->curMagPtr].operation = false;
     this->ptrUp();
 }
 
@@ -891,10 +1065,12 @@ void Magazine::compoundBodyRule2() {
 
     this->magazine[this->curMagPtr].typeSymb = TypeCompoundBodyNonTerm;
     this->magazine[this->curMagPtr].term = false;
+    this->magazine[this->curMagPtr].operation = false;
     this->ptrUp();
 
     this->magazine[this->curMagPtr].typeSymb = TypeConstVarsNonTerm;
     this->magazine[this->curMagPtr].term = false;
+    this->magazine[this->curMagPtr].operation = false;
     this->ptrUp();
 }
 
@@ -904,10 +1080,12 @@ void Magazine::compoundBodyRule3() {
 
     this->magazine[this->curMagPtr].typeSymb = TypeCompoundBodyNonTerm;
     this->magazine[this->curMagPtr].term = false;
+    this->magazine[this->curMagPtr].operation = false;
     this->ptrUp();
 
     this->magazine[this->curMagPtr].typeSymb = TypeOperatorNonTerm;
     this->magazine[this->curMagPtr].term = false;
+    this->magazine[this->curMagPtr].operation = false;
     this->ptrUp();
 }
 
@@ -916,14 +1094,28 @@ void Magazine::operatorRule1() {
 
     this->magazine[this->curMagPtr].typeSymb = TypeSimpleOperatorNonTerm;
     this->magazine[this->curMagPtr].term = false;
+    this->magazine[this->curMagPtr].operation = false;
     this->ptrUp();
 }
 
 void Magazine::operatorRule2() {
     this->ptrDown();
 
+    // Return level with delete compound from tree operation
+    this->magazine[this->curMagPtr].typeSymb = TypeDeltaDeleteCompoundOper;
+    this->magazine[this->curMagPtr].term = false;
+    this->magazine[this->curMagPtr].operation = true;
+    this->ptrUp();
+
     this->magazine[this->curMagPtr].typeSymb = TypeCompoundOperatorNonTerm;
     this->magazine[this->curMagPtr].term = false;
+    this->magazine[this->curMagPtr].operation = false;
+    this->ptrUp();
+
+    // Start new level operation
+    this->magazine[this->curMagPtr].typeSymb = TypeDeltaSetNewLevelOper;
+    this->magazine[this->curMagPtr].term = false;
+    this->magazine[this->curMagPtr].operation = true;
     this->ptrUp();
 }
 
@@ -932,6 +1124,7 @@ void Magazine::operatorRule3() {
 
     this->magazine[this->curMagPtr].typeSymb = TypeEndComma;
     this->magazine[this->curMagPtr].term = true;
+    this->magazine[this->curMagPtr].operation = false;
     this->ptrUp();
 }
 
@@ -940,6 +1133,7 @@ void Magazine::simpleOperatorRule1() {
 
     this->magazine[this->curMagPtr].typeSymb = TypeForNonTerm;
     this->magazine[this->curMagPtr].term = false;
+    this->magazine[this->curMagPtr].operation = false;
     this->ptrUp();
 }
 
@@ -948,68 +1142,89 @@ void Magazine::simpleOperatorRule2() {
 
     this->magazine[this->curMagPtr].typeSymb = TypeEqualNonTerm;
     this->magazine[this->curMagPtr].term = false;
+    this->magazine[this->curMagPtr].operation = false;
     this->ptrUp();
 }
 
 void Magazine::forRule() {
     this->ptrDown();
 
+    // TODO Return level with delete compound from tree
+
     this->magazine[this->curMagPtr].typeSymb = TypeOperatorNonTerm;
     this->magazine[this->curMagPtr].term = false;
+    this->magazine[this->curMagPtr].operation = false;
     this->ptrUp();
+
+    // TODO set new level
 
     this->magazine[this->curMagPtr].typeSymb = TypeRightRB;
     this->magazine[this->curMagPtr].term = true;
+    this->magazine[this->curMagPtr].operation = false;
     this->ptrUp();
 
     this->magazine[this->curMagPtr].typeSymb = TypeEqualNonTerm;
     this->magazine[this->curMagPtr].term = false;
+    this->magazine[this->curMagPtr].operation = false;
     this->ptrUp();
 
     this->magazine[this->curMagPtr].typeSymb = TypeEndComma;
     this->magazine[this->curMagPtr].term = true;
+    this->magazine[this->curMagPtr].operation = false;
     this->ptrUp();
 
     this->magazine[this->curMagPtr].typeSymb = TypeExprNonTerm;
     this->magazine[this->curMagPtr].term = false;
+    this->magazine[this->curMagPtr].operation = false;
     this->ptrUp();
 
     this->magazine[this->curMagPtr].typeSymb = TypeEndComma;
     this->magazine[this->curMagPtr].term = true;
+    this->magazine[this->curMagPtr].operation = false;
     this->ptrUp();
+
+    // TODO Set identifier with start declaration, which we delete after 'for'
+    // TODO Also rebuild this NonTerm into 'type ident = expr;'
 
     this->magazine[this->curMagPtr].typeSymb = TypeEqualNonTerm;
     this->magazine[this->curMagPtr].term = false;
+    this->magazine[this->curMagPtr].operation = false;
     this->ptrUp();
 
     this->magazine[this->curMagPtr].typeSymb = TypeTypeNonTerm;
     this->magazine[this->curMagPtr].term = false;
+    this->magazine[this->curMagPtr].operation = false;
     this->ptrUp();
 
     this->magazine[this->curMagPtr].typeSymb = TypeLeftRB;
     this->magazine[this->curMagPtr].term = true;
+    this->magazine[this->curMagPtr].operation = false;
     this->ptrUp();
 
     this->magazine[this->curMagPtr].typeSymb = TypeFor;
     this->magazine[this->curMagPtr].term = true;
+    this->magazine[this->curMagPtr].operation = false;
     this->ptrUp();
 }
 
 void Magazine::equalRule() {
     this->ptrDown();
 
+    // TODO match and matchLeft operations
+
     this->magazine[this->curMagPtr].typeSymb = TypeExprNonTerm;
     this->magazine[this->curMagPtr].term = false;
+    this->magazine[this->curMagPtr].operation = false;
     this->ptrUp();
 
     this->magazine[this->curMagPtr].typeSymb = TypeAssign;
     this->magazine[this->curMagPtr].term = true;
+    this->magazine[this->curMagPtr].operation = false;
     this->ptrUp();
-
-    // TODO get prevLex for assign variable
 
     this->magazine[this->curMagPtr].typeSymb = TypePreIdentNonTerm;
     this->magazine[this->curMagPtr].term = false;
+    this->magazine[this->curMagPtr].operation = false;
     this->ptrUp();
 }
 
@@ -1018,10 +1233,12 @@ void Magazine::exprRule() {
 
     this->magazine[this->curMagPtr].typeSymb = TypeEndofExprNonTerm;
     this->magazine[this->curMagPtr].term = false;
+    this->magazine[this->curMagPtr].operation = false;
     this->ptrUp();
 
     this->magazine[this->curMagPtr].typeSymb = TypeXorBitNonTerm;
     this->magazine[this->curMagPtr].term = false;
+    this->magazine[this->curMagPtr].operation = false;
     this->ptrUp();
 }
 
@@ -1030,14 +1247,17 @@ void Magazine::endofExprRule() {
 
     this->magazine[this->curMagPtr].typeSymb = TypeEndofExprNonTerm;
     this->magazine[this->curMagPtr].term = false;
+    this->magazine[this->curMagPtr].operation = false;
     this->ptrUp();
 
     this->magazine[this->curMagPtr].typeSymb = TypeXorBitNonTerm;
     this->magazine[this->curMagPtr].term = false;
+    this->magazine[this->curMagPtr].operation = false;
     this->ptrUp();
 
     this->magazine[this->curMagPtr].typeSymb = TypeBitOr;
     this->magazine[this->curMagPtr].term = true;
+    this->magazine[this->curMagPtr].operation = false;
     this->ptrUp();
 }
 
@@ -1046,10 +1266,12 @@ void Magazine::xorBitRule() {
 
     this->magazine[this->curMagPtr].typeSymb = TypeEndofXorNonTerm;
     this->magazine[this->curMagPtr].term = false;
+    this->magazine[this->curMagPtr].operation = false;
     this->ptrUp();
 
     this->magazine[this->curMagPtr].typeSymb = TypeAndBitNonTerm;
     this->magazine[this->curMagPtr].term = false;
+    this->magazine[this->curMagPtr].operation = false;
     this->ptrUp();
 }
 
@@ -1058,14 +1280,17 @@ void Magazine::endofXorRule() {
 
     this->magazine[this->curMagPtr].typeSymb = TypeEndofXorNonTerm;
     this->magazine[this->curMagPtr].term = false;
+    this->magazine[this->curMagPtr].operation = false;
     this->ptrUp();
 
     this->magazine[this->curMagPtr].typeSymb = TypeAndBitNonTerm;
     this->magazine[this->curMagPtr].term = false;
+    this->magazine[this->curMagPtr].operation = false;
     this->ptrUp();
 
     this->magazine[this->curMagPtr].typeSymb = TypeBitXor;
     this->magazine[this->curMagPtr].term = true;
+    this->magazine[this->curMagPtr].operation = false;
     this->ptrUp();
 }
 
@@ -1074,10 +1299,12 @@ void Magazine::andBitRule() {
 
     this->magazine[this->curMagPtr].typeSymb = TypeEndofAndNonTerm;
     this->magazine[this->curMagPtr].term = false;
+    this->magazine[this->curMagPtr].operation = false;
     this->ptrUp();
 
     this->magazine[this->curMagPtr].typeSymb = TypeComparisonNonTerm;
     this->magazine[this->curMagPtr].term = false;
+    this->magazine[this->curMagPtr].operation = false;
     this->ptrUp();
 }
 
@@ -1086,14 +1313,17 @@ void Magazine::endofAndRule() {
 
     this->magazine[this->curMagPtr].typeSymb = TypeEndofAndNonTerm;
     this->magazine[this->curMagPtr].term = false;
+    this->magazine[this->curMagPtr].operation = false;
     this->ptrUp();
 
     this->magazine[this->curMagPtr].typeSymb = TypeAndBitNonTerm;
     this->magazine[this->curMagPtr].term = false;
+    this->magazine[this->curMagPtr].operation = false;
     this->ptrUp();
 
     this->magazine[this->curMagPtr].typeSymb = TypeBitAnd;
     this->magazine[this->curMagPtr].term = true;
+    this->magazine[this->curMagPtr].operation = false;
     this->ptrUp();
 }
 
@@ -1102,10 +1332,12 @@ void Magazine::comparisonRule() {
 
     this->magazine[this->curMagPtr].typeSymb = TypeEndofComparisonNonTerm;
     this->magazine[this->curMagPtr].term = false;
+    this->magazine[this->curMagPtr].operation = false;
     this->ptrUp();
 
     this->magazine[this->curMagPtr].typeSymb = TypeAdditierNonTerm;
     this->magazine[this->curMagPtr].term = false;
+    this->magazine[this->curMagPtr].operation = false;
     this->ptrUp();
 }
 
@@ -1114,14 +1346,17 @@ void Magazine::endofComparisonRule() {
 
     this->magazine[this->curMagPtr].typeSymb = TypeEndofComparisonNonTerm;
     this->magazine[this->curMagPtr].term = false;
+    this->magazine[this->curMagPtr].operation = false;
     this->ptrUp();
 
     this->magazine[this->curMagPtr].typeSymb = TypeComparisonNonTerm;
     this->magazine[this->curMagPtr].term = false;
+    this->magazine[this->curMagPtr].operation = false;
     this->ptrUp();
 
     this->magazine[this->curMagPtr].typeSymb = TypeCompSignNonTerm;
     this->magazine[this->curMagPtr].term = false;
+    this->magazine[this->curMagPtr].operation = false;
     this->ptrUp();
 }
 
@@ -1130,6 +1365,7 @@ void Magazine::compSignE() {
 
     this->magazine[this->curMagPtr].typeSymb = TypeEqual;
     this->magazine[this->curMagPtr].term = true;
+    this->magazine[this->curMagPtr].operation = false;
     this->ptrUp();
 }
 
@@ -1138,6 +1374,7 @@ void Magazine::compSignNE() {
 
     this->magazine[this->curMagPtr].typeSymb = TypeNotEqual;
     this->magazine[this->curMagPtr].term = true;
+    this->magazine[this->curMagPtr].operation = false;
     this->ptrUp();
 }
 
@@ -1146,6 +1383,7 @@ void Magazine::compSignG() {
 
     this->magazine[this->curMagPtr].typeSymb = TypeMore;
     this->magazine[this->curMagPtr].term = true;
+    this->magazine[this->curMagPtr].operation = false;
     this->ptrUp();
 }
 
@@ -1154,6 +1392,7 @@ void Magazine::compSignGOE() {
 
     this->magazine[this->curMagPtr].typeSymb = TypeMoreOrEqual;
     this->magazine[this->curMagPtr].term = true;
+    this->magazine[this->curMagPtr].operation = false;
     this->ptrUp();
 }
 
@@ -1162,6 +1401,7 @@ void Magazine::compSignL() {
 
     this->magazine[this->curMagPtr].typeSymb = TypeLess;
     this->magazine[this->curMagPtr].term = true;
+    this->magazine[this->curMagPtr].operation = false;
     this->ptrUp();
 }
 
@@ -1170,6 +1410,7 @@ void Magazine::compSignLOE() {
 
     this->magazine[this->curMagPtr].typeSymb = TypeLessOrEqual;
     this->magazine[this->curMagPtr].term = true;
+    this->magazine[this->curMagPtr].operation = false;
     this->ptrUp();
 }
 
@@ -1178,10 +1419,12 @@ void Magazine::additierRule() {
 
     this->magazine[this->curMagPtr].typeSymb = TypeEndofAdditierNonTerm;
     this->magazine[this->curMagPtr].term = false;
+    this->magazine[this->curMagPtr].operation = false;
     this->ptrUp();
 
     this->magazine[this->curMagPtr].typeSymb = TypeMultiplierNonTerm;
     this->magazine[this->curMagPtr].term = false;
+    this->magazine[this->curMagPtr].operation = false;
     this->ptrUp();
 }
 
@@ -1190,14 +1433,17 @@ void Magazine::endofAdditierRule1() {
 
     this->magazine[this->curMagPtr].typeSymb = TypeEndofAdditierNonTerm;
     this->magazine[this->curMagPtr].term = false;
+    this->magazine[this->curMagPtr].operation = false;
     this->ptrUp();
 
     this->magazine[this->curMagPtr].typeSymb = TypeAdditierNonTerm;
     this->magazine[this->curMagPtr].term = false;
+    this->magazine[this->curMagPtr].operation = false;
     this->ptrUp();
 
     this->magazine[this->curMagPtr].typeSymb = TypeAdd;
     this->magazine[this->curMagPtr].term = true;
+    this->magazine[this->curMagPtr].operation = false;
     this->ptrUp();
 }
 
@@ -1206,14 +1452,17 @@ void Magazine::endofAdditierRule2() {
 
     this->magazine[this->curMagPtr].typeSymb = TypeEndofAdditierNonTerm;
     this->magazine[this->curMagPtr].term = false;
+    this->magazine[this->curMagPtr].operation = false;
     this->ptrUp();
 
     this->magazine[this->curMagPtr].typeSymb = TypeAdditierNonTerm;
     this->magazine[this->curMagPtr].term = false;
+    this->magazine[this->curMagPtr].operation = false;
     this->ptrUp();
 
     this->magazine[this->curMagPtr].typeSymb = TypeSub;
     this->magazine[this->curMagPtr].term = true;
+    this->magazine[this->curMagPtr].operation = false;
     this->ptrUp();
 }
 
@@ -1222,10 +1471,12 @@ void Magazine::multiplierRule() {
 
     this->magazine[this->curMagPtr].typeSymb = TypeEndofMultiplierNonTerm;
     this->magazine[this->curMagPtr].term = false;
+    this->magazine[this->curMagPtr].operation = false;
     this->ptrUp();
 
     this->magazine[this->curMagPtr].typeSymb = TypeBasicExprNonTerm;
     this->magazine[this->curMagPtr].term = false;
+    this->magazine[this->curMagPtr].operation = false;
     this->ptrUp();
 }
 
@@ -1234,14 +1485,17 @@ void Magazine::endofMultiplierRule1() {
 
     this->magazine[this->curMagPtr].typeSymb = TypeEndofMultiplierNonTerm;
     this->magazine[this->curMagPtr].term = false;
+    this->magazine[this->curMagPtr].operation = false;
     this->ptrUp();
 
     this->magazine[this->curMagPtr].typeSymb = TypeMultiplierNonTerm;
     this->magazine[this->curMagPtr].term = false;
+    this->magazine[this->curMagPtr].operation = false;
     this->ptrUp();
 
     this->magazine[this->curMagPtr].typeSymb = TypeMul;
     this->magazine[this->curMagPtr].term = true;
+    this->magazine[this->curMagPtr].operation = false;
     this->ptrUp();
 }
 
@@ -1250,14 +1504,17 @@ void Magazine::endofMultiplierRule2() {
 
     this->magazine[this->curMagPtr].typeSymb = TypeEndofMultiplierNonTerm;
     this->magazine[this->curMagPtr].term = false;
+    this->magazine[this->curMagPtr].operation = false;
     this->ptrUp();
 
     this->magazine[this->curMagPtr].typeSymb = TypeMultiplierNonTerm;
     this->magazine[this->curMagPtr].term = false;
+    this->magazine[this->curMagPtr].operation = false;
     this->ptrUp();
 
     this->magazine[this->curMagPtr].typeSymb = TypeDiv;
     this->magazine[this->curMagPtr].term = true;
+    this->magazine[this->curMagPtr].operation = false;
     this->ptrUp();
 }
 
@@ -1266,14 +1523,17 @@ void Magazine::endofMultiplierRule3() {
 
     this->magazine[this->curMagPtr].typeSymb = TypeEndofMultiplierNonTerm;
     this->magazine[this->curMagPtr].term = false;
+    this->magazine[this->curMagPtr].operation = false;
     this->ptrUp();
 
     this->magazine[this->curMagPtr].typeSymb = TypeMultiplierNonTerm;
     this->magazine[this->curMagPtr].term = false;
+    this->magazine[this->curMagPtr].operation = false;
     this->ptrUp();
 
     this->magazine[this->curMagPtr].typeSymb = TypeDivPart;
     this->magazine[this->curMagPtr].term = true;
+    this->magazine[this->curMagPtr].operation = false;
     this->ptrUp();
 }
 
@@ -1282,30 +1542,46 @@ void Magazine::basicExprRule1() {
 
     this->magazine[this->curMagPtr].typeSymb = TypePreIdentNonTerm;
     this->magazine[this->curMagPtr].term = false;
+    this->magazine[this->curMagPtr].operation = false;
     this->ptrUp();
 }
 
 void Magazine::basicExprRule2Exp() {
     this->ptrDown();
 
+    // TODO delta push t (in stack of triad)
+
+    // TODO delta const type (in triad)
+
     this->magazine[this->curMagPtr].typeSymb = TypeConstExp;
     this->magazine[this->curMagPtr].term = true;
+    this->magazine[this->curMagPtr].operation = false;
     this->ptrUp();
 }
 
 void Magazine::basicExprRule2Int() {
     this->ptrDown();
 
+    // TODO delta push t (in stack of triad)
+
+    // TODO delta const type (in triad)
+
     this->magazine[this->curMagPtr].typeSymb = TypeConstInt;
     this->magazine[this->curMagPtr].term = true;
+    this->magazine[this->curMagPtr].operation = false;
     this->ptrUp();
 }
 
 void Magazine::basicExprRule2Hex() {
     this->ptrDown();
 
+    // TODO delta push t (in stack of triad)
+
+    // TODO delta const type (in triad)
+
     this->magazine[this->curMagPtr].typeSymb = TypeConstHex;
     this->magazine[this->curMagPtr].term = true;
+    this->magazine[this->curMagPtr].operation = false;
     this->ptrUp();
 }
 
@@ -1314,26 +1590,43 @@ void Magazine::basicExprRule3() {
 
     this->magazine[this->curMagPtr].typeSymb = TypeRightRB;
     this->magazine[this->curMagPtr].term = true;
+    this->magazine[this->curMagPtr].operation = false;
     this->ptrUp();
 
     this->magazine[this->curMagPtr].typeSymb = TypeExprNonTerm;
     this->magazine[this->curMagPtr].term = false;
+    this->magazine[this->curMagPtr].operation = false;
     this->ptrUp();
 
     this->magazine[this->curMagPtr].typeSymb = TypeLeftRB;
     this->magazine[this->curMagPtr].term = true;
+    this->magazine[this->curMagPtr].operation = false;
     this->ptrUp();
 }
 
 void Magazine::preIdentRule() {
     this->ptrDown();
 
+    // Check identifier type operation
+    this->magazine[this->curMagPtr].typeSymb = TypeDeltaCheckIdentTypeOper;
+    this->magazine[this->curMagPtr].term = false;
+    this->magazine[this->curMagPtr].operation = true;
+    this->ptrUp();
+
     this->magazine[this->curMagPtr].typeSymb = TypeEndofIdentNonTerm;
     this->magazine[this->curMagPtr].term = false;
+    this->magazine[this->curMagPtr].operation = false;
+    this->ptrUp();
+
+    // Find identifier operation
+    this->magazine[this->curMagPtr].typeSymb = TypeDeltaFindIdentifierOper;
+    this->magazine[this->curMagPtr].term = false;
+    this->magazine[this->curMagPtr].operation = true;
     this->ptrUp();
 
     this->magazine[this->curMagPtr].typeSymb = TypeIdent;
     this->magazine[this->curMagPtr].term = true;
+    this->magazine[this->curMagPtr].operation = false;
     this->ptrUp();
 }
 
@@ -1342,13 +1635,26 @@ void Magazine::endofIdentRule() {
 
     this->magazine[this->curMagPtr].typeSymb = TypeEndofIdentNonTerm;
     this->magazine[this->curMagPtr].term = false;
+    this->magazine[this->curMagPtr].operation = false;
+    this->ptrUp();
+
+    // Find identifier in struct operation
+    this->magazine[this->curMagPtr].typeSymb = TypeDeltaFindIdentifierInStructOper;
+    this->magazine[this->curMagPtr].term = false;
+    this->magazine[this->curMagPtr].operation = true;
     this->ptrUp();
 
     this->magazine[this->curMagPtr].typeSymb = TypeIdent;
     this->magazine[this->curMagPtr].term = true;
+    this->magazine[this->curMagPtr].operation = false;
     this->ptrUp();
 
     this->magazine[this->curMagPtr].typeSymb = TypeDot;
     this->magazine[this->curMagPtr].term = true;
+    this->magazine[this->curMagPtr].operation = false;
     this->ptrUp();
+}
+
+void Magazine::printTree() {
+    this->translate->printTree();
 }

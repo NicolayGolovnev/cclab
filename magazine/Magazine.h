@@ -110,7 +110,7 @@ public:
     void run();
     void analyzeNonTerm(int lexType, char *lex);
     void analyzeOperation(int lexType, char *lex);
-    // TODO print end tree func
+    void printTree();
 };
 
 

@@ -32,8 +32,10 @@ struct GlobalData {
     TypeLex structIdent;
     // Указатель на идентификатор в дереве
     Tree* identPtr = nullptr;
+    // Указатель на структуру в дереве
+    Tree* structPtr = nullptr;
 
-    // Стек указателей в дереве (для заполнения структуры, сложных операторов, for, main)
+    // Стек указателей в дереве (для заполнения структуры, сложных операторов (анонимные, for), main)
     std::stack<Tree*> levels;
 };
 

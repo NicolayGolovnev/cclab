@@ -5,20 +5,17 @@ struct abc1 {
     abc a, b;
     int d;
 };
-abc x, y;
+const int a = 5;
 
 int main() {
-    int arr, bb;{int arr, bb;{int arr, bb;}}
-    abc a;
-    {
-        int a, bb, arr;
-        {
-            long d;
-            int q;
-            double s;
-            abc f;
-        }
-        double c;
-    }
+    abc str;
+    int p;
+    p = str.b;
+    p = p + 100;
+
+    abc1 str2;
+    int pp;
+    pp = str2.a.b;
+
     return 1;
 }

@@ -105,10 +105,11 @@ typedef char TypeLex[MAX_LEX];
 #define TypeDeltaSetMainOper 166
 #define TypeDeltaSetNewLevelOper 167
 #define TypeDeltaReturnLevelOper 168
+#define TypeDeltaDeleteCompoundOper 169
 
-#define TypeDeltaFindIdentifierOper 169
-#define TypeDeltaCheckIdentTypeOper 170
-#define TypeDeltaDeleteCompoundOper 171
+#define TypeDeltaFindIdentifierOper 170
+#define TypeDeltaFindIdentifierInStructOper 171
+#define TypeDeltaCheckIdentTypeOper 172
 
 #define TypeErr 100
 #define TypeEnd 200

@@ -7,7 +7,7 @@
 #include "../magazine/Magazine.h"
 
 
-int main(int argc, char* argv[]) {
+int testSemantic() {
     setlocale(LC_ALL, "Russian");
 
     Magazine *analyze;

@@ -58,16 +58,13 @@ public:
     ~Tree();
     void setLeft(Node* data);
     void setRight(Node* data);
-    void setNullableLR(Tree* from);
 
     Tree* findUp(Tree* from, TypeLex id);
     Tree* findUpOnLevel(Tree* from, TypeLex id);
 
     void print();
     void printError(std::string error, TypeLex a);
-    void printError(std::string error, Tree* addr);
     int findDuplicate(Tree* addr, TypeLex a);
-    int findDuplicate(Tree* addr);
 
     void setCur(Tree* a);
     void setScaner(Scaner* scaner);
@@ -83,7 +80,6 @@ public:
     void checkConst(TypeLex a);
     void checkConst(Tree* a);
     void semanticTypeCastCheck(TypeLex a, TypeLex b);
-    void semanticTypeCastCheck(Tree* a, TypeLex b);
     void semanticTypeCastCheck(DATA_TYPE a, DATA_TYPE b);
 
     Tree* semanticGetVar(TypeLex a);
@@ -92,6 +88,7 @@ public:
     Tree* semanticGetIdentifierInStruct(Tree* from, TypeLex a);
     DATA_TYPE getType(TypeLex a);
     DATA_TYPE getType(Tree* a);
+    char* getIdentifier(Tree* from);
 
     Tree* compoundOperator();
 
@@ -111,7 +108,6 @@ public:
 
     //#5-6
     static bool flagInterpret;
-
 };
 
 #endif //ANALYZATOR_SEMANTIC_H

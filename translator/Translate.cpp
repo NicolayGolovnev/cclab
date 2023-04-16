@@ -5,14 +5,24 @@
 #include <iostream>
 #include "Translate.h"
 
-void Translate::setTree(Tree *tree) {
-    this->tree = tree;
+Translate::Translate() {
+    this->global = new GlobalData();
 }
 
-OBJECT_TYPE Translate::getObjectTypeFromDataType() {
-    if (this->global->dataType == DATA_TYPE::TYPE_DATASTRUCT)
-        return OBJECT_TYPE::TYPE_STRUCT;
-    return TYPE_UNDEFINED;
+DATA_TYPE Translate::getType(char *lex) {
+    if (strcmp(lex, "int") == 0)
+        return DATA_TYPE::TYPE_INTEGER;
+    else if (strcmp(lex, "short") == 0)
+        return DATA_TYPE::TYPE_SHORT;
+    else if (strcmp(lex, "long") == 0)
+        return DATA_TYPE::TYPE_LONG;
+    else if (strcmp(lex, "double") == 0)
+        return DATA_TYPE::TYPE_DOUBLE;
+    else return DATA_TYPE::TYPE_DATASTRUCT;
+}
+
+void Translate::setTree(Tree *tree) {
+    this->tree = tree;
 }
 
 void Translate::copyLex(char *lex) {
@@ -26,7 +36,7 @@ void Translate::copyLex(char *lex) {
 void Translate::deltaStartDeclaration() {
     this->global->flagDeclaration = true;
     // get type from prevLex ('identifier', short, long, int, double)
-    this->global->dataType = this->tree->getType(this->global->prevLex);
+    this->global->dataType = this->getType(this->global->prevLex);
 
     // check dataType == DATASTRUCT is a rly struct
     if (this->global->dataType == DATA_TYPE::TYPE_DATASTRUCT)
@@ -44,25 +54,31 @@ void Translate::deltaEndDeclaration() {
 }
 
 void Translate::deltaSetIdentifier() {
-    if (!this->tree->findDuplicate(Tree::cur)) {
+    if (!this->tree->findDuplicate(Tree::cur, this->global->prevLex)) {
         this->global->identPtr = this->tree->semanticInclude(
                 this->global->prevLex,
                 OBJECT_TYPE::TYPE_VAR,
                 this->global->dataType
                 );
-    } else ;
-        // TODO print error - FIND DUPLICATES
+    } else
+        this->tree->printError(
+                const_cast<char*>("Find duplicate of identifier in semantic tree"),
+                this->global->prevLex
+        );
 }
 
 void Translate::deltaSetPropertiesForIdent() {
     if (this->global->isConstDeclaration) {
+        char* lex = this->tree->getIdentifier(this->global->identPtr);
+
         this->tree->semanticSetConst(this->global->identPtr, true);
+        // TODO заменить this->global->prevLex на триаду, так как в присваивании может быть выражение
         this->tree->semanticSetData(
                 this->global->identPtr,
                 this->global->dataType,
                 this->global->prevLex
         );
-        this->tree->semanticTypeCastCheck(this->global->identPtr, this->global->prevLex);
+        this->tree->semanticTypeCastCheck(lex, this->global->prevLex);
     }
     else
         this->tree->semanticSetConst(this->global->identPtr, false);
@@ -111,14 +127,30 @@ void Translate::deltaReturnLevel() {
 
 void Translate::deltaFindIdentifier() {
     this->global->identPtr = this->tree->findUp(Tree::cur, this->global->prevLex);
-    // TODO проверка, что это правильный тип - отдельным правилом delta,
-    //  после лексемы a.a.a будет стоять
+    if (this->global->identPtr == nullptr)
+        this->tree->printError("Description of identifier not found", this->global->prevLex);
+
+    if (this->tree->getType(this->global->identPtr) == DATA_TYPE::TYPE_DATASTRUCT)
+        this->global->structPtr = this->tree->semanticGetStructData(this->global->identPtr);
+
+    // Проверка, что это правильный тип - отдельным правилом deltaCheckIdentType(),
+    // так как это возможно будет идентификатор объекта структуры
+}
+
+void Translate::deltaFindIdentifierInStruct() {
+    this->global->identPtr = this->tree->semanticGetIdentifierInStruct(this->global->structPtr, this->global->prevLex);
+    if (this->global->identPtr == nullptr)
+        this->tree->printError("Description of identifier not found", this->global->prevLex);
+
+    if (this->tree->getType(this->global->identPtr) == DATA_TYPE::TYPE_DATASTRUCT)
+        this->global->structPtr = this->tree->semanticGetStructData(this->global->identPtr);
 }
 
 void Translate::deltaCheckIdentType() {
+    char* lex = this->tree->getIdentifier(this->global->identPtr);
     DATA_TYPE type = this->tree->getType(this->global->identPtr);
     if (type == TYPE_DATASTRUCT)
-        this->tree->printError("Cannot use a object of structure in expressions", this->global->identPtr);
+        this->tree->printError("Cannot use a object of structure in expressions", lex);
 }
 
 void Translate::deltaDeleteCompound() {
@@ -131,5 +163,9 @@ void Translate::deltaDeleteCompound() {
     //удаляем сложный оператор
     this->tree->deleteTreeFrom(returned);
     std::cout << "\nPrint a tree after deleting compound operator:" << std::endl;
+    this->tree->print();
+}
+
+void Translate::printTree() {
     this->tree->print();
 }
