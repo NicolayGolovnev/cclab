@@ -1,21 +1,18 @@
-struct abc {
-    int a, b = 10;
+struct s1 {
+    int a, b;
 };
-struct abc1 {
-    abc a, b;
-    int d;
+struct s2 {
+    int a, b;
+    s1 x, y;
 };
-const int a = 5;
+struct s3 {
+    int a, b;
+    s1 x, y;
+    s2 xx, yy;
+};
 
+s3 d;
 int main() {
-    abc str;
-    int p;
-    p = str.b;
-    p = p + 100;
-
-    abc1 str2;
-    int pp;
-    pp = str2.a.b;
-
-    return 1;
+    //d.x.x.x.x.x.x.x = 5;
+    d.xx.x.a = 0;
 }

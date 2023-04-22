@@ -1,0 +1,37 @@
+struct abc {
+    int a, b = 10;
+};
+struct abc1 {
+    abc a, b;
+    int d;
+};
+const int a = 5;
+
+int main() {
+    a = 2; // нельзя изменять константу (пока что нету проверки в ЛР2)
+    short b = 33, bb;
+    bb = a; // невозможно привести к типу int (пока что нету проверки в ЛР2)
+
+    int q, qq;
+    q = a + b;
+    qq = b;
+
+    double l, k;
+    k = l; // l неинициализирована (пока что нету проверки в ЛР2)
+
+    abc str;
+    //abc.a = 1; // непроинициализирована abc как переменная (Description of struct-identifier not found)
+    int p;
+    //p = str.a; // непроинициализирована
+    p = str.b;
+
+    abc1 str2;
+    int pp;
+    pp = str2.a.b;
+
+    int checker;
+    //checker = str; // нельзя привести структуру к int
+}
+
+//int main() { // нельзя описывать функцию более 1 раза
+//}

@@ -27,10 +27,11 @@ void Translate::setTree(Tree *tree) {
 
 void Translate::copyLex(char *lex) {
     int localDataType = this->tree->getType(lex);
+    memcpy(this->global->prevLex, lex, sizeof(lex));
+
+    // Сохраняем лексему структуры для инициализации объектов структуры
     if (localDataType == DATA_TYPE::TYPE_DATASTRUCT)
         memcpy(this->global->structIdent, lex, sizeof(lex));
-    else
-        memcpy(this->global->prevLex, lex, sizeof(lex));
 }
 
 void Translate::deltaStartDeclaration() {
@@ -140,7 +141,7 @@ void Translate::deltaFindIdentifier() {
 void Translate::deltaFindIdentifierInStruct() {
     this->global->identPtr = this->tree->semanticGetIdentifierInStruct(this->global->structPtr, this->global->prevLex);
     if (this->global->identPtr == nullptr)
-        this->tree->printError("Description of identifier not found", this->global->prevLex);
+        this->tree->printError("Description of struct-identifier not found", this->global->prevLex);
 
     if (this->tree->getType(this->global->identPtr) == DATA_TYPE::TYPE_DATASTRUCT)
         this->global->structPtr = this->tree->semanticGetStructData(this->global->identPtr);

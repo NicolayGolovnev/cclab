@@ -1023,10 +1023,9 @@ void Magazine::endofConstVarListRule() {
     this->ptrUp();
 }
 
+// Delta-operations include in anothers rules (bcs main, struct has {})
 void Magazine::compoundOperatorRule() {
     this->ptrDown();
-
-    // TODO return level
 
     this->magazine[this->curMagPtr].typeSymb = TypeRightFB;
     this->magazine[this->curMagPtr].term = true;
@@ -1042,8 +1041,6 @@ void Magazine::compoundOperatorRule() {
     this->magazine[this->curMagPtr].term = true;
     this->magazine[this->curMagPtr].operation = false;
     this->ptrUp();
-
-    // TODO set newLevel ??? (what about main)
 }
 
 void Magazine::compoundBodyRule1() {
