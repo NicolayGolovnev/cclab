@@ -57,7 +57,7 @@ typedef char TypeLex[MAX_LEX];
 #define TypeEndComma 45 // ;
 #define TypeDot 46 // .
 
-// От 110 до 190 - правила нетерминалов
+// От 110 до 150 - правила нетерминалов
 #define TypeProgNonTerm 110
 #define TypeDescriptionNonTerm 111
 #define TypeStructNonTerm 112
@@ -95,6 +95,7 @@ typedef char TypeLex[MAX_LEX];
 
 #define TypeConstTypeNonTerm 150
 
+// От 160 до 197 - правила операций
 #define TypeDeltaStartDeclarationOper 160
 #define TypeDeltaEndDeclarationOper 161
 #define TypeDeltaSetConstDeclarationOper 162
@@ -105,13 +106,36 @@ typedef char TypeLex[MAX_LEX];
 #define TypeDeltaSetMainOper 166
 #define TypeDeltaSetNewLevelOper 167
 #define TypeDeltaReturnLevelOper 168
-#define TypeDeltaDeleteCompoundOper 169
 
-#define TypeDeltaFindIdentifierOper 170
-#define TypeDeltaFindIdentifierInStructOper 171
-#define TypeDeltaCheckIdentTypeOper 172
+#define TypeDeltaFindIdentifierOper 169
+#define TypeDeltaFindIdentifierInStructOper 170
+#define TypeDeltaCheckIdentTypeOper 171
 
-#define TypeErr 100
-#define TypeEnd 200
+#define TypeDeltaMatchLeftOper 180
+#define TypeDeltaMatchBitOrOper 181
+#define TypeDeltaMatchBitXorOper 182
+#define TypeDeltaMatchBitAndOper 183
+#define TypeDeltaMatchComparisonOper 184
+#define TypeDeltaMatchAddOper 185
+#define TypeDeltaMatchSubOper 186
+#define TypeDeltaMatchMulOper 187
+#define TypeDeltaMatchDivOper 188
+#define TypeDeltaMatchDivPartOper 189
+
+#define TypeDeltaPushOperandOper 190
+#define TypeDeltaPushConstOper 191
+#define TypeDeltaRememberCompSignOper 192
+
+#define TypeDeltaSetMayEqualInitializationOper 193
+
+#define TypeDeltaFormForOper 200
+#define TypeDeltaSetAddrOper 201
+#define TypeDeltaGenerateIfOper 202
+#define TypeDeltaGenerateGoToOper 203
+#define TypeDeltaGenerateNOPOper 204
+
+
+#define TypeErr 800
+#define TypeEnd 900
 
 #endif //ANALYZATOR_DEFS_H

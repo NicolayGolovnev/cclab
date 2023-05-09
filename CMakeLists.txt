@@ -8,4 +8,4 @@ add_executable(mag_analyzator defs.h main.cpp
         magazine/Magazine.cpp magazine/Magazine.h magazine/TestMagazine.cpp
         semantic/Semantic.h semantic/Semantic.cpp semantic/TestSemantic.cpp
         translator/Translate.cpp translator/Translate.h translator/TranslatorHelper.h
-        )
+        triad/GenerTriad.cpp triad/GenerTriad.h triad/TriadHelper.h)

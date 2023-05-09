@@ -202,6 +202,8 @@ void Tree::semanticSetStruct(Tree *&addr, Tree *data) {
 
     if (addr->node->objectType == TYPE_VAR)
         addr->node->objectType = TYPE_STRUCT;
+
+    memcpy(addr->node->structLex, data->up->node->id, sizeof(data->up->node->id));
     addr->node->dataStruct = copyTree(data, addr);
 }
 
@@ -406,6 +408,11 @@ Tree *Tree::copyTree(Tree *from, Tree *up) {
     Tree *newTree = nullptr;
     if (from != nullptr) {
         newTree = new Tree(nullptr, nullptr, up, from->node);
+        if (from->node->dataType == DATA_TYPE::TYPE_DATASTRUCT /*&& from->node->objectType == OBJECT_TYPE::TYPE_STRUCT*/)
+            newTree->node->dataStruct = this->copyTree(
+                    this->semanticGetStructData(from->node->structLex),
+                    newTree
+                    );
         if (from->right)
             newTree->right = copyTree(from->right, newTree);
         if (from->left)
@@ -485,7 +492,7 @@ void Tree::semanticGetData(Tree *a, ExpresData *data) {
     data->dataValue = a->node->dataValue;
 }
 
-void Tree::semanticGetStringValue(TypeLex value, ExpresData *data, int type) {
+void Tree::semanticGetStringValue(TypeLex value, ExpresData *data, int type = 0) {
     if (!flagInterpret)
         return ;
     double val = (double) strtoul(value, nullptr, 0);
@@ -787,5 +794,23 @@ void Tree::printInfo(Tree* a, std::string beforeText) {
         printf("var \'%s\', value: %d\n", a->node->id, a->node->dataValue.vInt);
     else if (a->node->dataType == TYPE_DOUBLE)
         printf("var \'%s\', value: %f\n", a->node->id, a->node->dataValue.vDouble);
+}
+
+std::string Tree::generateFullLexFromStruct(Tree *structLevel, char *structLex) {
+    std::string fullLex = structLevel->node->id;
+    structLevel = structLevel->up;
+
+    if (structLevel == nullptr)
+        return fullLex;
+    else {
+        do {
+            fullLex = "." + fullLex;
+            while(strcmp(structLevel->node->id, (char*)"<r>") != 0)
+                structLevel = structLevel->up;
+            structLevel = structLevel->up;
+            fullLex = structLevel->node->id + fullLex;
+        } while (structLevel->up != nullptr && (strcmp(structLevel->node->id, structLex) != 0));
+    }
+    return fullLex;
 }
 

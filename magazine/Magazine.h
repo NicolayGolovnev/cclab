@@ -9,6 +9,7 @@
 #include "../defs.h"
 #include "../scaner/Scaner.h"
 #include "../translator/Translate.h"
+#include "../triad/GenerTriad.h"
 
 // Размер магазина
 #define MAX_LEN_MAG 1000
@@ -28,6 +29,7 @@ class Magazine {
 private:
     Scaner *scanner;
     Translate* translate;
+    GenerTriad* generation;
 
     MagOneSymb magazine[MAX_LEN_MAG];
     int curMagPtr = 0; // Указатель на верхушку магазина
@@ -111,6 +113,7 @@ public:
     void analyzeNonTerm(int lexType, char *lex);
     void analyzeOperation(int lexType, char *lex);
     void printTree();
+    void printTriads();
 };
 
 

@@ -32,6 +32,7 @@ struct Node {
     bool init;                  // Инициализация переменной
     //для объекта структуры
     Tree* dataStruct = nullptr;           // Ссылка на объекты структуры
+    TypeLex structLex;
 };
 
 struct ExpresData {
@@ -61,6 +62,7 @@ public:
 
     Tree* findUp(Tree* from, TypeLex id);
     Tree* findUpOnLevel(Tree* from, TypeLex id);
+    std::string generateFullLexFromStruct(Tree* structLevel, TypeLex lex);
 
     void print();
     void printError(std::string error, TypeLex a);

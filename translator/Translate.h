@@ -15,9 +15,13 @@ class Translate {
 
     DATA_TYPE getType(TypeLex lex);
 
+    int getTypeOfOperation(TypeLex operation);
+    ExpresData getValueFromOperand(Operand operand);
+
 public:
     Translate();
     void setTree(Tree* tree);
+    GlobalData* getGlobal();
     void copyLex(TypeLex lex);
 
     void printTree();
@@ -25,6 +29,7 @@ public:
     // declarations
     void deltaStartDeclaration();
     void deltaEndDeclaration();
+    void deltaSetMayEqualInitialization();
     void deltaSetConstDeclaration();
     void deltaSetIdentifier();
     void deltaSetPropertiesForIdent();
@@ -37,9 +42,6 @@ public:
     void deltaFindIdentifier();
     void deltaFindIdentifierInStruct();
     void deltaCheckIdentType();
-    void deltaDeleteCompound();
-
-    // matchLeft, match
 };
 
 
