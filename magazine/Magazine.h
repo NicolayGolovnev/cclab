@@ -114,6 +114,8 @@ public:
     void analyzeOperation(int lexType, char *lex);
     void printTree();
     void printTriads();
+
+    void optimizeTriads();
 };
 
 

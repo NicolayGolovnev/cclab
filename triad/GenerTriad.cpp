@@ -284,3 +284,81 @@ void GenerTriad::deltaFormForCycle() {
     this->global->gotoMarkers.pop();
     this->global->resultTriads[gotoCycleBodyTriadNumber].firstOperand.number = bodyCycleTriadNumber;
 }
+
+void GenerTriad::deltaOptimizeExpressionTriads() {
+    // Простая оптимизация триад-выражений - если операнды являются константами, то заранее выполним операцию над этими операндами
+
+    for (int i = 0; i < this->global->resultTriads.size(); i++) {
+        if (this->global->resultTriads[i].firstOperand.isConst && this->global->resultTriads[i].secondOperand.isConst) {
+            int firstOperandValue = (int) strtod(this->global->resultTriads[i].firstOperand.lex, nullptr);
+            int secondOperandValue = (int) strtod(this->global->resultTriads[i].secondOperand.lex, nullptr);
+            int operationResult = this->getResultOfOperation(this->global->resultTriads[i].operation, firstOperandValue, secondOperandValue);
+
+            // Заменяем везде, где есть ссылка на этот операнд в триадах на вычисленную константу
+            for (int j = i+1; j < this->global->resultTriads.size(); j++) {
+                if (this->global->resultTriads[j].firstOperand.isLink && this->global->resultTriads[j].firstOperand.number == i) {
+                    this->global->resultTriads[j].firstOperand.isLink = false;
+                    this->global->resultTriads[j].firstOperand.isConst = true;
+                    TypeLex value;
+                    sprintf(value, "%d", operationResult);
+                    memcpy(this->global->resultTriads[j].firstOperand.lex, value, sizeof(value));
+                }
+
+                if (this->global->resultTriads[j].secondOperand.isLink && this->global->resultTriads[j].secondOperand.number == i) {
+                    this->global->resultTriads[j].secondOperand.isLink = false;
+                    this->global->resultTriads[j].secondOperand.isConst = true;
+                    TypeLex value;
+                    sprintf(value, "%d", operationResult);
+                    memcpy(this->global->resultTriads[j].secondOperand.lex, value, sizeof(value));
+                }
+            }
+
+            // Затираем эту триаду
+            memcpy(this->global->resultTriads[i].operation, "nop", sizeof("nop"));
+            this->global->resultTriads[i].firstOperand.isLink = true;
+            this->global->resultTriads[i].firstOperand.isConst = false;
+            this->global->resultTriads[i].firstOperand.number = -220; // неиспользуемая операнда
+
+            this->global->resultTriads[i].secondOperand.isLink = true;
+            this->global->resultTriads[i].secondOperand.isConst = false;
+            this->global->resultTriads[i].secondOperand.number = -220; // неиспользуемая операнда
+        }
+    }
+}
+
+int GenerTriad::getResultOfOperation(char *operation, int firstValue, int secondValue) {
+    double result = -220;
+
+    if (strcmp(operation, (char*)"|") == 0) {
+        result = firstValue | secondValue;
+    } else if (strcmp(operation, (char*)"^") == 0) {
+        result = firstValue ^ secondValue;
+    } else if (strcmp(operation, (char*)"&") == 0) {
+        result = firstValue & secondValue;
+    } else if (strcmp(operation, (char*)"==") == 0) {
+        result = firstValue == secondValue;
+    } else if (strcmp(operation, (char*)"!=") == 0) {
+        result = firstValue != secondValue;
+    } else if (strcmp(operation, (char*)">=") == 0) {
+        result = firstValue >= secondValue;
+    } else if (strcmp(operation, (char*)">") == 0) {
+        result = firstValue > secondValue;
+    } else if (strcmp(operation, (char*)"<=") == 0) {
+        result = firstValue <= secondValue;
+    } else if (strcmp(operation, (char*)"<") == 0) {
+        result = firstValue < secondValue;
+    } else if (strcmp(operation, (char*)"+") == 0) {
+        result = firstValue + secondValue;
+    } else if (strcmp(operation, (char*)"-") == 0) {
+        result = firstValue - secondValue;
+    } else if (strcmp(operation, (char*)"*") == 0) {
+        result = firstValue * secondValue;
+    } else if (strcmp(operation, (char*)"/") == 0) {
+        result = firstValue / secondValue;
+    } else if (strcmp(operation, (char*)"%") == 0) {
+        result = firstValue % secondValue;
+    } else
+        this->tree->printError("Unexpected this operation in triads optimization", operation);
+
+    return (int) result;
+}

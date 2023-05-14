@@ -1566,7 +1566,7 @@ void Magazine::endofAndRule() {
     this->magazine[this->curMagPtr].operation = true;
     this->ptrUp();
 
-    this->magazine[this->curMagPtr].typeSymb = TypeAndBitNonTerm;
+    this->magazine[this->curMagPtr].typeSymb = TypeComparisonNonTerm;
     this->magazine[this->curMagPtr].term = false;
     this->magazine[this->curMagPtr].operation = false;
     this->ptrUp();
@@ -1605,7 +1605,7 @@ void Magazine::endofComparisonRule() {
     this->magazine[this->curMagPtr].operation = true;
     this->ptrUp();
 
-    this->magazine[this->curMagPtr].typeSymb = TypeComparisonNonTerm;
+    this->magazine[this->curMagPtr].typeSymb = TypeAdditierNonTerm;
     this->magazine[this->curMagPtr].term = false;
     this->magazine[this->curMagPtr].operation = false;
     this->ptrUp();
@@ -1704,7 +1704,7 @@ void Magazine::endofAdditierRule1() {
     this->magazine[this->curMagPtr].operation = true;
     this->ptrUp();
 
-    this->magazine[this->curMagPtr].typeSymb = TypeAdditierNonTerm;
+    this->magazine[this->curMagPtr].typeSymb = TypeMultiplierNonTerm;
     this->magazine[this->curMagPtr].term = false;
     this->magazine[this->curMagPtr].operation = false;
     this->ptrUp();
@@ -1729,7 +1729,7 @@ void Magazine::endofAdditierRule2() {
     this->magazine[this->curMagPtr].operation = true;
     this->ptrUp();
 
-    this->magazine[this->curMagPtr].typeSymb = TypeAdditierNonTerm;
+    this->magazine[this->curMagPtr].typeSymb = TypeMultiplierNonTerm;
     this->magazine[this->curMagPtr].term = false;
     this->magazine[this->curMagPtr].operation = false;
     this->ptrUp();
@@ -1768,7 +1768,7 @@ void Magazine::endofMultiplierRule1() {
     this->magazine[this->curMagPtr].operation = true;
     this->ptrUp();
 
-    this->magazine[this->curMagPtr].typeSymb = TypeMultiplierNonTerm;
+    this->magazine[this->curMagPtr].typeSymb = TypeBasicExprNonTerm;
     this->magazine[this->curMagPtr].term = false;
     this->magazine[this->curMagPtr].operation = false;
     this->ptrUp();
@@ -1793,7 +1793,7 @@ void Magazine::endofMultiplierRule2() {
     this->magazine[this->curMagPtr].operation = true;
     this->ptrUp();
 
-    this->magazine[this->curMagPtr].typeSymb = TypeMultiplierNonTerm;
+    this->magazine[this->curMagPtr].typeSymb = TypeBasicExprNonTerm;
     this->magazine[this->curMagPtr].term = false;
     this->magazine[this->curMagPtr].operation = false;
     this->ptrUp();
@@ -1818,7 +1818,7 @@ void Magazine::endofMultiplierRule3() {
     this->magazine[this->curMagPtr].operation = true;
     this->ptrUp();
 
-    this->magazine[this->curMagPtr].typeSymb = TypeMultiplierNonTerm;
+    this->magazine[this->curMagPtr].typeSymb = TypeBasicExprNonTerm;
     this->magazine[this->curMagPtr].term = false;
     this->magazine[this->curMagPtr].operation = false;
     this->ptrUp();
@@ -1965,4 +1965,8 @@ void Magazine::printTree() {
 
 void Magazine::printTriads() {
     this->generation->printTriads();
+}
+
+void Magazine::optimizeTriads() {
+    this->generation->deltaOptimizeExpressionTriads();
 }

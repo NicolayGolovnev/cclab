@@ -216,7 +216,6 @@ ExpresData Translate::getValueFromOperand(Operand operand) {
     } else if (operand.isConst) {
         ExpresData dataValue;
         this->tree->semanticGetStringValue(operand.lex, &dataValue, 0);
-        dataValue.dataType = this->tree->getType(operand.lex);
 
         return dataValue;
     } else {

@@ -18,8 +18,9 @@ private:
 
     void deltaMatch();
 
-    Operand* copy(Operand another);
     void generateTriad(TypeLex operationType);
+
+    int getResultOfOperation(TypeLex operation, int firstValue, int secondValue);
 
 public:
     GenerTriad();
@@ -46,6 +47,8 @@ public:
     void deltaGenerateNOP();
     void deltaSetAddrForMarkers();
     void deltaFormForCycle();
+
+    void deltaOptimizeExpressionTriads();
 
     void printTriads();
 };
