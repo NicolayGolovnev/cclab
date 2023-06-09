@@ -9,6 +9,15 @@
 #include "../defs.h"
 #include "../semantic/Semantic.h"
 
+enum RegisterType {
+    eax,
+    ebx,
+    ecx,
+    edx,
+    esi,
+    edi
+};
+
 class Tree;
 struct Operand {
     bool isLink; // Признак операнда или ссылки не нее
@@ -24,6 +33,8 @@ struct Operand {
 struct Triad {
     TypeLex operation; // Операция триады в виде лексемы
     Operand firstOperand, secondOperand;
+
+    RegisterType registerType; // Регистр, в котором будет хранится идентификатор (при использовании ссылки на операнд)
 };
 
 #endif //MAG_ANALYZATOR_TRIADHELPER_H

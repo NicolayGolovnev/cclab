@@ -1989,6 +1989,7 @@ void Magazine::initAsm() {
 
 void Magazine::generateAsm() {
     this->assemble->generateGlobalData();
+    this->assemble->generateTriadAsm();
     this->assemble->generateMainFunc();
 }
 

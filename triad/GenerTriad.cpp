@@ -94,6 +94,7 @@ void GenerTriad::deltaPushOperand(bool isConst) {
     if (treeOperand != nullptr) {
         char* asmName = this->tree->getAsmIdentifier(treeOperand);
         int asmNameLen = std::string(asmName).size();
+        memset(newOperand.lex, '\0', sizeof(newOperand.lex));
         memcpy(newOperand.lex, asmName, asmNameLen);
     }
     else

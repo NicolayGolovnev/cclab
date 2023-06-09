@@ -67,6 +67,8 @@ private:
     Scaner* sc;
 
     int computeStackAddr(Tree* from, int stackAddr);
+
+    Tree* findInTree(Tree* from, TypeLex asmId);
 public:
     static Tree* cur;
     Tree();
@@ -136,6 +138,11 @@ public:
 
     void insertLevel(Tree* from, int level);
     void computeStackAddrInMain(Tree* root);
+
+    Tree* findUpByAsmId(TypeLex asmId);
+    bool hasRightPart(Tree* addr);
+    Tree* goNextLeft(Tree* from);
+    Tree* goNextRight(Tree* from);
 };
 
 #endif //ANALYZATOR_SEMANTIC_H

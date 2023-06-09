@@ -3,7 +3,7 @@
 
 int main(int argc, char *argv[]) {
     Magazine *analyze;
-    char* fileName = const_cast<char*>("triad/test-debug.txt");
+    char* fileName = const_cast<char*>("asm/test-debug.txt");
 
     analyze = new Magazine(fileName);
     analyze->run();

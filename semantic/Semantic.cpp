@@ -986,3 +986,48 @@ Node *Tree::getNode(Tree *from) {
     else
         return nullptr;
 }
+
+Tree *Tree::findInTree(Tree* from, TypeLex asmId) {
+    Tree *i = from; // Текущая вершина поиска
+    while ((i != nullptr) && (memcmp(asmId, i->node->asmId, max(strlen(i->node->asmId), strlen(asmId))) != 0)) {
+        Tree* right = nullptr;
+        if (i->right != nullptr)
+            right = this->findInTree(i->right, asmId);
+
+        if (right == nullptr)
+            i = i->left;
+    }
+
+    return i;
+}
+
+Tree *Tree::findUpByAsmId(TypeLex asmId) {
+    Tree *i = cur; // Текущая вершина поиска
+    while ((i != nullptr) && (memcmp(asmId, i->node->asmId, max(strlen(i->node->asmId), strlen(asmId))) != 0)) {
+        Tree* right = nullptr;
+        if (i->right != nullptr)
+            right = this->findInTree(i->right, asmId);
+
+        if (right == nullptr)
+            i = i->up; // поднимаемся вверх по связям
+        else
+            return right;
+    }
+
+    return i;
+}
+
+bool Tree::hasRightPart(Tree *addr) {
+    if (addr->right != nullptr)
+        return true;
+    else
+        return false;
+}
+
+Tree *Tree::goNextLeft(Tree *from) {
+    return from->left;
+}
+
+Tree *Tree::goNextRight(Tree *from) {
+    return from->right->left;
+}

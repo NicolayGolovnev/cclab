@@ -16,6 +16,15 @@ private:
     std::deque<std::string> globalDataDeclaration;
     std::deque<std::string> constDataDeclaration;
     std::deque<std::string> asmCode;
+    std::stack<std::string> localData;
+
+    std::deque<bool> registerLoad;
+    std::deque<std::string> asmTriads;
+
+    void insertLocalData(Tree* from);
+
+    RegisterType getRegister();
+    void freeRegister(RegisterType registerType);
 public:
     GenerAsm();
     void setTree(Tree* tree);
@@ -26,6 +35,7 @@ public:
     void preInitializeTree();
     void generateGlobalData();
     void generateMainFunc();
+    void generateTriadAsm();
 };
 
 
