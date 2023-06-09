@@ -90,7 +90,14 @@ void GenerTriad::deltaPushOperand(bool isConst) {
     }
     else
         newOperand.isConst = false;
-    memcpy(newOperand.lex, this->global->prevLex, sizeof(this->global->prevLex));
+    Tree* treeOperand = tree->findUp(this->tree->cur, this->global->prevLex);
+    if (treeOperand != nullptr) {
+        char* asmName = this->tree->getAsmIdentifier(treeOperand);
+        int asmNameLen = std::string(asmName).size();
+        memcpy(newOperand.lex, asmName, asmNameLen);
+    }
+    else
+        memcpy(newOperand.lex, this->global->prevLex, sizeof(this->global->prevLex));
     // Запоминаем тип структуры, если лексема из структуры
     if (this->global->structPtr != nullptr) {
         newOperand.ptrTree = this->tree->semanticGetIdentifierInStruct(this->global->structPtr, this->global->prevLex);

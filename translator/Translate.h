@@ -36,6 +36,7 @@ public:
 
     void deltaSetFunc();
     void deltaSetStruct();
+    void deltaSetStructData();
     void deltaSetNewLevel();
     void deltaReturnLevel();
 

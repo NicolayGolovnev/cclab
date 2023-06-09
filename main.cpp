@@ -11,11 +11,15 @@ int main(int argc, char *argv[]) {
 
     printf("Semantic tree:\n");
     analyze->printTree();
-    analyze->printTriads();
+//    analyze->printTriads();
 
-    printf("After optimization:\n");
+//    printf("After optimization:\n");
     analyze->optimizeTriads();
     analyze->printTriads();
+
+    analyze->initAsm();
+    analyze->generateAsm();
+    analyze->printAsm();
 
     return 0;
 }

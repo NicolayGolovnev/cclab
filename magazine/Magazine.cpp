@@ -14,6 +14,8 @@ Magazine::Magazine(char *filename) {
     this->translate = new Translate();
     this->generation = new GenerTriad();
     this->generation->setGlobal(this->translate->getGlobal());
+    this->assemble = new GenerAsm();
+    this->assemble->setGlobal(this->translate->getGlobal());
     // Создание семантического дерева
     Node node;
     memcpy(node.id, &("root"), 5);
@@ -26,6 +28,7 @@ Magazine::Magazine(char *filename) {
 
     this->translate->setTree(root);
     this->generation->setTree(root);
+    this->assemble->setTree(root);
     // ------------------------------
 
     this->curMagPtr = 0;
@@ -529,6 +532,10 @@ void Magazine::analyzeOperation(int lexType, char *lex) {
             this->translate->deltaSetStruct();
             this->ptrDown();
             break;
+        case TypeDeltaSetStructDataOper:
+            this->translate->deltaSetStructData();
+            this->ptrDown();
+            break;
         case TypeDeltaSetNewLevelOper:
             this->translate->deltaSetNewLevel();
             this->ptrDown();
@@ -688,6 +695,11 @@ void Magazine::structRule() {
 
     // return level of tree operation
     this->magazine[this->curMagPtr].typeSymb = TypeDeltaReturnLevelOper;
+    this->magazine[this->curMagPtr].term = false;
+    this->magazine[this->curMagPtr].operation = true;
+    this->ptrUp();
+
+    this->magazine[this->curMagPtr].typeSymb = TypeDeltaSetStructDataOper;
     this->magazine[this->curMagPtr].term = false;
     this->magazine[this->curMagPtr].operation = true;
     this->ptrUp();
@@ -1969,4 +1981,17 @@ void Magazine::printTriads() {
 
 void Magazine::optimizeTriads() {
     this->generation->deltaOptimizeExpressionTriads();
+}
+
+void Magazine::initAsm() {
+    this->assemble->preInitializeTree();
+}
+
+void Magazine::generateAsm() {
+    this->assemble->generateGlobalData();
+    this->assemble->generateMainFunc();
+}
+
+void Magazine::printAsm() {
+    this->assemble->printAllData();
 }

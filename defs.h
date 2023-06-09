@@ -103,6 +103,7 @@ typedef char TypeLex[MAX_LEX];
 #define TypeDeltaSetPropertiesForIdentOper 164
 
 #define TypeDeltaSetStructOper 165
+#define TypeDeltaSetStructDataOper 205
 #define TypeDeltaSetMainOper 166
 #define TypeDeltaSetNewLevelOper 167
 #define TypeDeltaReturnLevelOper 168

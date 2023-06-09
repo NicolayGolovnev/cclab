@@ -10,6 +10,7 @@
 #include "../scaner/Scaner.h"
 #include "../translator/Translate.h"
 #include "../triad/GenerTriad.h"
+#include "../asm/GenerAsm.h"
 
 // Размер магазина
 #define MAX_LEN_MAG 1000
@@ -30,6 +31,7 @@ private:
     Scaner *scanner;
     Translate* translate;
     GenerTriad* generation;
+    GenerAsm* assemble;
 
     MagOneSymb magazine[MAX_LEN_MAG];
     int curMagPtr = 0; // Указатель на верхушку магазина
@@ -116,6 +118,10 @@ public:
     void printTriads();
 
     void optimizeTriads();
+
+    void initAsm();
+    void generateAsm();
+    void printAsm();
 };
 
 

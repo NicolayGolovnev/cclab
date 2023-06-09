@@ -18,6 +18,13 @@ union DataValue {
     double vDouble;
 };
 
+enum TypeDecl {
+    DQ = 8,
+    DD = 4,
+    DW = 2,
+    DB = 1
+};
+
 class Tree;
 // Структура для хранения в таблице идентификаторов
 struct Node {
@@ -26,6 +33,12 @@ struct Node {
     DATA_TYPE dataType;         // тип значения - short, int, long, double, объект структуры
 
     DataValue dataValue;
+
+    TypeLex asmId;              // Уникальный идентификатор ассемблерный
+    TypeDecl declarationType;   // DQ, DD, DW, DB
+    int len;                    // Размер переменной
+    int level;                  // Уровень вложенности идентификатора
+    int stackAddr;              // Смещение адреса в стеке
 
     //для переменной
     bool isConst;               // Флаг константы
@@ -52,6 +65,8 @@ private:
     Node* node;
     Tree *up, *left, *right;
     Scaner* sc;
+
+    int computeStackAddr(Tree* from, int stackAddr);
 public:
     static Tree* cur;
     Tree();
@@ -110,6 +125,17 @@ public:
 
     //#5-6
     static bool flagInterpret;
+
+    std::string generateAsmName(Node node);
+    char* getAsmIdentifier(Tree* from);
+    Tree* goNext(Tree* from);
+    Node* getNode(Tree* from);
+
+    int computeLengthOfStruct(Tree* structAddr);
+    int computeMemorySizeOfFunc(Tree* funcAddr);
+
+    void insertLevel(Tree* from, int level);
+    void computeStackAddrInMain(Tree* root);
 };
 
 #endif //ANALYZATOR_SEMANTIC_H

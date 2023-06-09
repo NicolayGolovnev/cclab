@@ -37,6 +37,8 @@ struct GlobalData {
     Tree* identPtr = nullptr;
     // Указатель на структуру в дереве
     Tree* structPtr = nullptr;
+    // Указатель для заполнения инициализирующей структуры
+    Tree* structDataPtr = nullptr;
 
     // Стек указателей в дереве (для заполнения структуры, сложных операторов (анонимные, for), main)
     std::stack<Tree*> levels;

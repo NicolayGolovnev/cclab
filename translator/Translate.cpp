@@ -102,7 +102,7 @@ void Translate::deltaSetPropertiesForIdent() {
     // Однако может быть такое, что переменная не инициализирована, но нашлась похожая - проверяем еще по флагу
     if (this->global->isMayEqualInitialization && !this->global->resultTriads.empty()) {
         Triad expression = this->global->resultTriads.back();
-        char* identifier = this->tree->getIdentifier(this->global->identPtr);
+        char* identifier = this->tree->getAsmIdentifier(this->global->identPtr);
         if (strcmp(expression.operation, (char*)"=") == 0 && strcmp(expression.firstOperand.lex, identifier) == 0) {
             ExpresData dataValue = this->getValueFromOperand(expression.secondOperand);
             TypeLex value;
@@ -148,8 +148,18 @@ void Translate::deltaSetStruct() {
             OBJECT_TYPE::TYPE_UNDEFINED,
             DATA_TYPE::TYPE_DATASTRUCT
     );
+    this->global->structDataPtr = structPtr;
 
     this->global->levels.push(structPtr);
+}
+
+void Translate::deltaSetStructData() {
+    this->tree->semanticSetInit(this->global->structDataPtr, false);
+    this->tree->semanticSetConst(this->global->structDataPtr, false);
+    this->tree->semanticSetStruct(
+            this->global->structDataPtr,
+            this->tree->semanticGetStructData(this->tree->getNode(this->global->structDataPtr)->id)
+    );
 }
 
 void Translate::deltaSetNewLevel() {

@@ -6,10 +6,12 @@ struct abc1 {
     int d;
 };
 const int a = 10;
+double qq = 5;
 
 int main() {
     int wasd;
     wasd = (100 + 200) * 3 - 50 * 2;
+    abc sdfds;
 
     for(int i = 0; i < 5; i = i + 1) {
         int a;
@@ -18,4 +20,8 @@ int main() {
 
     int b = 33;
     int c = b * 2 / 11 + 5 - 3;
+
+    abc1 str2;
+    int pp;
+    pp = str2.a.b;
 }

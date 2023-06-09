@@ -15,6 +15,8 @@ Tree *Tree::cur = (Tree *) nullptr;
 bool Tree::flagInterpret = true;
 std::vector<std::string> types = {"none", "short", "int", "long", "double", "type of struct"};
 
+int numGenAsm = 0; // Икнрементируемый номер для генерации уникальных идентификаторов (для asmId)
+
 Tree::Tree() {
     this->node = new Node();
     this->up = nullptr;
@@ -157,18 +159,36 @@ Tree *Tree::semanticInclude(TypeLex a, OBJECT_TYPE objType, DATA_TYPE dataType) 
     Tree *v;
     Node b;
 
+    memcpy(b.id, a, strlen(a) + 1);
+    b.objectType = objType;
+    b.dataType = dataType;
+
+    // Генерация нового имени в asm
+    // TODO
+    std::string newAsmNameStr = this->generateAsmName(b);
+    char* newAsmName = const_cast<char *>(newAsmNameStr.c_str());
+    newAsmName[newAsmNameStr.size()] = '\0';
+    memset(&b.asmId[0], 0, sizeof(b.asmId));
+    memcpy(b.asmId, newAsmName, newAsmNameStr.size());
+    // Тип переменной
+    if (b.dataType == DATA_TYPE::TYPE_DOUBLE)
+        b.declarationType = TypeDecl::DQ;
+    else if (b.dataType == DATA_TYPE::TYPE_INTEGER)
+        b.declarationType = TypeDecl::DD;
+    else if (b.dataType == DATA_TYPE::TYPE_SHORT)
+        b.declarationType = TypeDecl::DW;
+    else if (b.dataType == DATA_TYPE::TYPE_LONG)
+        b.declarationType = TypeDecl::DD;
+    else if (b.dataType == DATA_TYPE::TYPE_DATASTRUCT)
+        b.declarationType = TypeDecl::DB;
+    b.len = 1;
+
     if (objType == TYPE_VAR) {
-        memcpy(b.id, a, strlen(a) + 1);
-        b.objectType = objType;
-        b.dataType = dataType;
         b.isConst = false;
         cur->setLeft(&b); // сделали вершину - переменную
         cur = cur->left;
         return cur;
     } else {
-        memcpy(b.id, a, strlen(a) + 1);
-        b.objectType = objType;
-        b.dataType = dataType;
         cur->setLeft(&b); // сделали вершину - функцию или структуру
         cur = cur->left;
         v = cur; // это точка возврата после выхода из функции
@@ -187,6 +207,8 @@ void Tree::semanticSetInit(Tree *addr, bool flag) {
         return ;
 
     addr->node->init = flag;
+    if (flag == true)
+        addr->node->len = addr->node->declarationType;
 }
 
 void Tree::semanticSetConst(Tree *addr, bool flag) {
@@ -408,7 +430,7 @@ Tree *Tree::copyTree(Tree *from, Tree *up) {
     Tree *newTree = nullptr;
     if (from != nullptr) {
         newTree = new Tree(nullptr, nullptr, up, from->node);
-        if (from->node->dataType == DATA_TYPE::TYPE_DATASTRUCT /*&& from->node->objectType == OBJECT_TYPE::TYPE_STRUCT*/)
+        if (from->node->dataType == DATA_TYPE::TYPE_DATASTRUCT)
             newTree->node->dataStruct = this->copyTree(
                     this->semanticGetStructData(from->node->structLex),
                     newTree
@@ -797,7 +819,7 @@ void Tree::printInfo(Tree* a, std::string beforeText) {
 }
 
 std::string Tree::generateFullLexFromStruct(Tree *structLevel, char *structLex) {
-    std::string fullLex = structLevel->node->id;
+    std::string fullLex = structLevel->node->asmId;
     structLevel = structLevel->up;
 
     if (structLevel == nullptr)
@@ -808,9 +830,159 @@ std::string Tree::generateFullLexFromStruct(Tree *structLevel, char *structLex) 
             while(strcmp(structLevel->node->id, (char*)"<r>") != 0)
                 structLevel = structLevel->up;
             structLevel = structLevel->up;
-            fullLex = structLevel->node->id + fullLex;
+            fullLex = structLevel->node->asmId + fullLex;
         } while (structLevel->up != nullptr && (strcmp(structLevel->node->id, structLex) != 0));
     }
     return fullLex;
 }
 
+// Вычисление занимаемой длины идентификатора типы структуры
+int Tree::computeLengthOfStruct(Tree *structAddr) {
+    int totalLength = 0;
+
+    Tree *i = structAddr; // Текущая вершина структуры
+    while(i != nullptr) {
+        if (i->node->dataType == DATA_TYPE::TYPE_DATASTRUCT)
+            totalLength += this->computeLengthOfStruct(i->node->dataStruct);
+        else
+            totalLength += i->node->declarationType;
+
+        i = i->left;
+    }
+
+    if (totalLength % 8 != 0)
+        totalLength += 8 - totalLength % 8;
+
+    return (totalLength == 0) ? 1 : totalLength;
+}
+
+int Tree::computeMemorySizeOfFunc(Tree *funcAddr) {
+    int totalShift = 0;
+
+    Tree *i = funcAddr; // Текущая вершина функции
+    while(i != nullptr) {
+        // Если справа есть ветка - значит это сложный оператор
+        if (i->right != nullptr)
+            totalShift -= this->computeMemorySizeOfFunc(i->right);
+        else {
+            // Если переменная с типом структуры
+            if (i->node->dataType == DATA_TYPE::TYPE_DATASTRUCT)
+                totalShift -= this->computeLengthOfStruct(i->node->dataStruct);
+            // Если переменная не инициализирована
+            else if (!i->node->isConst && !i->node->init)
+                totalShift -= i->node->declarationType;
+        }
+
+        i = i->left;
+    }
+
+    if (totalShift % 8 != 0)
+        totalShift += totalShift % 8;
+
+    return totalShift;
+}
+
+std::string Tree::generateAsmName(Node node) {
+    std::string name = node.id;
+    if (node.dataType == DATA_TYPE::TYPE_DOUBLE)
+        name = "double_" + name;
+    else if (node.dataType == DATA_TYPE::TYPE_INTEGER)
+        name = "int_" + name;
+    else if (node.dataType == DATA_TYPE::TYPE_LONG)
+        name = "long_" + name;
+    else if (node.dataType == DATA_TYPE::TYPE_SHORT)
+        name = "short_" + name;
+    else if (node.dataType == DATA_TYPE::TYPE_DATASTRUCT)
+        name = "datastruct_" + name;
+    else
+        name = "none_" + name;
+    name += "_";
+    name += std::to_string(numGenAsm++);
+
+    return name;
+}
+
+char* Tree::getAsmIdentifier(Tree *from) {
+    return from->node->asmId;
+}
+
+void Tree::insertLevel(Tree* from, int level) {
+    Tree* i = from;
+
+    while (i != nullptr) {
+        // Здесь высчитываем размер структуры
+        if (i->node->dataType == DATA_TYPE::TYPE_DATASTRUCT/* && i->node->objectType == OBJECT_TYPE::TYPE_STRUCT*/)
+            i->node->len = this->computeLengthOfStruct(i->node->dataStruct);
+
+        i->node->level = level;
+        if (i->right != nullptr) {
+            i->right->node->level = level + 1;
+            this->insertLevel(i->right->left, level + 2);
+        }
+
+        i = i->left;
+    }
+}
+
+void Tree::computeStackAddrInMain(Tree* root) {
+    Tree* from = root;
+    while (from->node->objectType != OBJECT_TYPE::TYPE_FUNC)
+        from = from->left;
+
+    Tree* mainTree = from;
+    int mainLocalShift = 0; // Сдвиг адреса для функции main
+    from = from->right->left;
+    while (from != nullptr) {
+        if (from->right == nullptr) {
+            if (from->node->dataStruct != nullptr) {
+                mainLocalShift -= from->node->len;
+            }
+            else if (!from->node->isConst && !from->node->init)
+                mainLocalShift -= from->node->declarationType;
+        } else
+            mainLocalShift = this->computeStackAddr(from->right->left, mainLocalShift);
+        from->node->stackAddr = mainLocalShift;
+
+        from = from->left;
+    }
+
+    mainTree->node->stackAddr = mainLocalShift;
+}
+
+int Tree::computeStackAddr(Tree *from, int stackAddr) {
+    Tree* i = from;
+    int localStackAddr = stackAddr;
+    while (i != nullptr) {
+        if (i->right != nullptr)
+            localStackAddr = this->computeStackAddr(i->right->left, localStackAddr);
+        else {
+            localStackAddr -= i->node->declarationType;
+            i->node->stackAddr = localStackAddr;
+        }
+
+        i = i->left;
+    }
+
+    return localStackAddr;
+}
+
+Tree *Tree::goNext(Tree *from) {
+    Tree* returnTree;
+    if (from != nullptr) {
+        if (from->node->objectType != OBJECT_TYPE::TYPE_FUNC)
+            returnTree = from->left;
+        else
+            returnTree = from->right->left;
+    }
+    else
+        returnTree = nullptr;
+
+    return returnTree;
+}
+
+Node *Tree::getNode(Tree *from) {
+    if (from != nullptr)
+        return from->node;
+    else
+        return nullptr;
+}
