@@ -209,12 +209,18 @@ void GenerAsm::generateMainFunc() {
 
 void GenerAsm::generateTriadAsm() {
     std::deque<Triad> triads = this->global->resultTriads;
+
+    std::string ifJump = "";
     for (int i = 0; i < triads.size(); i++) {
         Triad triad = triads[i];
+
+        if (triad.isGotoMark)
+            // MarkName:
+            this->asmTriads.push_back(triad.gotoMark + ":");
+
         if (strcmp(triad.operation, (char*)"nop") == 0)
             continue;
-        // пропускаем присвоение в глобальных данных
-        // TODO
+        // TODO пропускаем присвоение в глобальных данных
 
         // заходим только в триады с операциями + и =
         if (strcmp(triad.operation, (char*)"=") == 0 || strcmp(triad.operation, (char*)"+") == 0) {
@@ -389,6 +395,85 @@ void GenerAsm::generateTriadAsm() {
                     this->freeRegister(registerType);
                 }
             }
+        }
+
+        // Операции управления кодом (for-цикл)
+        if (strcmp(triad.operation, (char*)"<") == 0 || strcmp(triad.operation, (char*)">") == 0) {
+            if (strcmp(triad.operation, (char*)">") == 0)
+            // > i 5 - при сравнении cmp i, 5
+                ifJump = "\tjg SHORT ";
+            else if (strcmp(triad.operation, (char*)"<") == 0)
+            // < i 5 - при сравнении cmp i, 5
+                ifJump = "\tjl SHORT ";
+
+            // cmp a, b
+            std::string asmStr = "\tcmp ";
+            if (triad.firstOperand.isConst) {
+                std::string lex = triad.firstOperand.lex;
+                asmStr += lex;
+            }
+            else {
+                Tree* firstOperandPtr = this->tree->findUpByAsmId(triad.firstOperand.lex);
+                Node* firstNodeOperand = this->tree->getNode(firstOperandPtr);
+                if (firstNodeOperand == nullptr)
+                    continue;
+                else if (firstNodeOperand->level == 0) {
+                    std::string lex = firstNodeOperand->asmId;
+                    asmStr += lex;
+                }
+                else {
+                    if (firstNodeOperand->stackAddr == 0)
+                        continue;
+                    std::string lex = "(ebp" + std::to_string(firstNodeOperand->stackAddr) + ")";
+                    asmStr += lex;
+                }
+            }
+            asmStr += ", ";
+            if (triad.secondOperand.isConst) {
+                std::string lex = triad.secondOperand.lex;
+                asmStr += lex;
+            }
+            else {
+                Tree* secondOperandPtr = this->tree->findUpByAsmId(triad.secondOperand.lex);
+                Node* secondNodeOperand = this->tree->getNode(secondOperandPtr);
+                if (secondNodeOperand == nullptr)
+                    continue;
+                else if (secondNodeOperand->level == 0) {
+                    std::string lex = secondNodeOperand->asmId;
+                    asmStr += lex;
+                }
+                else {
+                    if (secondNodeOperand->stackAddr == 0)
+                        continue;
+                    std::string lex = "(ebp" + std::to_string(secondNodeOperand->stackAddr) + ")";
+                    asmStr += lex;
+                }
+            }
+
+            asmTriads.push_back(asmStr);
+        }
+
+        if (strcmp(triad.operation, (char*)"if") == 0) {
+            // if (i) (j)
+            // Получается, что у нас в ifJump есть правильный прыжок, если условие соблюдено
+            // а в триадах по ссылке находится gotoMark - собираем все вместе
+            int gotoTriadLinkFirst = triad.firstOperand.number;
+            int gotoTriadLinkSecond = triad.secondOperand.number;
+            ifJump += triads[gotoTriadLinkFirst].gotoMark;
+            std::string jmpAsm = "\tjmp " + triads[gotoTriadLinkSecond].gotoMark;
+
+            asmTriads.push_back(ifJump);
+            ifJump = "";
+            asmTriads.push_back(jmpAsm);
+        }
+
+        if (strcmp(triad.operation, (char*)"goto") == 0) {
+            // goto (i)
+            // Получается в триаде по ссылке i лежит метка, куда нужно прыгнуть
+            int gotoTriadLink = triad.firstOperand.number;
+            std::string jmpAsm = "\tjmp " + triads[gotoTriadLink].gotoMark;
+
+            asmTriads.push_back(jmpAsm);
         }
     }
 }

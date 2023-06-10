@@ -1981,6 +1981,7 @@ void Magazine::printTriads() {
 
 void Magazine::optimizeTriads() {
     this->generation->deltaOptimizeExpressionTriads();
+    this->generation->deltaCreateGotoMarkNames();
 }
 
 void Magazine::initAsm() {

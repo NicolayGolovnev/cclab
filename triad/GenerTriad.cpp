@@ -6,6 +6,8 @@
 
 #define max(a, b) a > b ? a : b
 
+int numGenMark = 0;
+
 GenerTriad::GenerTriad() = default;
 
 void GenerTriad::setTree(Tree *tree) {
@@ -369,4 +371,26 @@ int GenerTriad::getResultOfOperation(char *operation, int firstValue, int second
         this->tree->printError("Unexpected this operation in triads optimization", operation);
 
     return (int) result;
+}
+
+void GenerTriad::deltaCreateGotoMarkNames() {
+    for (int i = 0; i < this->global->resultTriads.size(); i++)
+        this->global->resultTriads[i].isGotoMark = false;
+
+    for (int i = 0; i < this->global->resultTriads.size(); i++) {
+        if (strcmp(this->global->resultTriads[i].operation, (char*)"goto") == 0) {
+            int triadLinkGoto = this->global->resultTriads[i].firstOperand.number;
+            this->global->resultTriads[triadLinkGoto].isGotoMark = true;
+            this->global->resultTriads[triadLinkGoto].gotoMark = "$LN_" + std::to_string(numGenMark++);
+        }
+        else if (strcmp(this->global->resultTriads[i].operation, (char*)"if") == 0) {
+            int triadLinkGotoFirst = this->global->resultTriads[i].firstOperand.number;
+            this->global->resultTriads[triadLinkGotoFirst].isGotoMark = true;
+            this->global->resultTriads[triadLinkGotoFirst].gotoMark = "$LN_" + std::to_string(numGenMark++);
+
+            int triadLinkGotoSecond = this->global->resultTriads[i].secondOperand.number;
+            this->global->resultTriads[triadLinkGotoSecond].isGotoMark = true;
+            this->global->resultTriads[triadLinkGotoSecond].gotoMark = "$LN_" + std::to_string(numGenMark++);
+        }
+    }
 }

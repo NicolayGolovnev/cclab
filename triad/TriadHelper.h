@@ -35,6 +35,8 @@ struct Triad {
     Operand firstOperand, secondOperand;
 
     RegisterType registerType; // Регистр, в котором будет хранится идентификатор (при использовании ссылки на операнд)
+    bool isGotoMark;           // Используется ли триада для прыжка
+    std::string gotoMark;      // Имя метки для операции goto по триаде
 };
 
 #endif //MAG_ANALYZATOR_TRIADHELPER_H

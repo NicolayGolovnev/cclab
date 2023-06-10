@@ -49,6 +49,7 @@ public:
     void deltaFormForCycle();
 
     void deltaOptimizeExpressionTriads();
+    void deltaCreateGotoMarkNames();
 
     void printTriads();
 };

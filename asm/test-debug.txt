@@ -5,8 +5,8 @@ struct abc1 {
     abc a, b;
     int d;
 };
-const int a = 10;
-double qq = 5;
+//const int a = 10;
+//double qq = 5;
 
 int main() {
     int wasd;
